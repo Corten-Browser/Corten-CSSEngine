@@ -5,6 +5,30 @@ edition = "2021"
 rust-version = "1.75"
 
 [dependencies]
-# Component dependencies will be added as needed
+# CSS Component dependencies (will be wired up as components are completed)
+# css-types = { path = "../css_types" }
+# css-parser-core = { path = "../css_parser_core" }
+# css-parser-values = { path = "../css_parser_values" }
+# css-cascade = { path = "../css_cascade" }
+# css-matcher-core = { path = "../css_matcher_core" }
+# css-matcher-pseudo = { path = "../css_matcher_pseudo" }
+# css-stylist-core = { path = "../css_stylist_core" }
+# css-stylist-cache = { path = "../css_stylist_cache" }
+# css-invalidation = { path = "../css_invalidation" }
+# css-layout-box-model = { path = "../css_layout_box_model" }
+# css-layout-flexbox = { path = "../css_layout_flexbox" }
+# css-layout-grid = { path = "../css_layout_grid" }
+# css-animations = { path = "../css_animations" }
+# css-custom-properties = { path = "../css_custom_properties" }
+
+# Shared browser types (will be wired up when available)
+# browser-types = { path = "../../shared-libs/browser-types" }
+# browser-interfaces = { path = "../../shared-libs/browser-interfaces" }
+
+# Error handling
+thiserror = "1.0"
+
+# Data structures
+fxhash = "0.2"
 
 [dev-dependencies]

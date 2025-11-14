@@ -7,24 +7,51 @@
 
 ## Responsibility
 
-CSS cascade algorithm - specificity calculation, inheritance, initial values
+CSS cascade algorithm implementation including:
+- Specificity calculation for CSS selectors
+- Cascade resolution (origin, specificity, source order)
+- Property inheritance
+- !important declaration handling
 
 ## Dependencies
 
-- `css_types`
+- `css_types` - Shared type definitions (Specificity, etc.)
+
+## Implementation
+
+### Public API
+
+- **CascadeResolver**: Main resolver struct
+  - `new()` - Create a new cascade resolver
+  - `resolve(&[ApplicableRule])` - Resolve cascade for a set of rules
+  - `compute_specificity(&Selector)` - Calculate selector specificity
+  - `apply_inheritance(&ComputedValues, &mut ComputedValues)` - Apply property inheritance
+
+### Types
+
+- **ApplicableRule**: Rule with specificity, origin, and source order
+- **Origin**: Rule origin enum (UserAgent, User, Author)
+- **CascadeResult**: Result of cascade resolution with properties map
+- **ComputedValues**: Container for computed property values
+- **Selector**: Selector representation (Type, Class, Id, Compound, etc.)
+- **PropertyId**: Property identifiers
+- **PropertyValue**: Property value variants
 
 ## Structure
 
 ```
 css_cascade/
 ├── src/
-│   └── lib.rs           # Public API
+│   ├── lib.rs           # Public API and exports
+│   ├── types.rs         # Type definitions
+│   └── resolver.rs      # Cascade resolution logic
 ├── tests/
 │   ├── unit/            # Unit tests
-│   └── integration/     # Integration tests
-├── benches/             # Performance benchmarks
+│   │   ├── specificity_tests.rs
+│   │   ├── cascade_tests.rs
+│   │   └── inheritance_tests.rs
+│   └── integration_tests.rs
 ├── Cargo.toml           # Rust dependencies
-├── component.yaml       # Component manifest
 ├── CLAUDE.md            # Agent instructions
 └── README.md            # This file
 ```
