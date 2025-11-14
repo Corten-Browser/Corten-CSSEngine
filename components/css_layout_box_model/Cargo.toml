@@ -5,6 +5,8 @@ edition = "2021"
 rust-version = "1.75"
 
 [dependencies]
-# Component dependencies will be added as needed
+# Component dependencies
+css-types = { path = "../css_types" }
+css-stylist-core = { path = "../css_stylist_core" }
 
 [dev-dependencies]
