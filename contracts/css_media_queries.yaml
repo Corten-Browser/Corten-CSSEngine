@@ -1,0 +1,255 @@
+name: css_media_queries
+version: "1.0.0"
+description: CSS media query parsing, evaluation, and viewport management
+
+types:
+  MediaType:
+    description: Media type (all, screen, print, etc.)
+    variants:
+      - All
+      - Screen
+      - Print
+      - Speech
+
+  MediaFeature:
+    description: Media feature query
+    variants:
+      - Width: { value: "Option<Length>" }  # min-width, max-width, width
+      - Height: { value: "Option<Length>" }  # min-height, max-height, height
+      - AspectRatio: { numerator: "u32", denominator: "u32" }
+      - Orientation: { value: Orientation }
+      - Resolution: { value: Resolution }
+      - ColorIndex: { value: "Option<u32>" }
+      - Color: { value: "Option<u32>" }  # bits per color
+      - Monochrome: { value: "Option<u32>" }
+      - Grid: { value: "bool" }
+      - Scan: { value: Scan }
+      - Update: { value: Update }
+      - Hover: { value: HoverCapability }
+      - Pointer: { value: PointerCapability }
+      - PrefersColorScheme: { value: ColorScheme }
+      - PrefersReducedMotion: { value: ReducedMotion }
+      - PrefersContrast: { value: Contrast }
+
+  Orientation:
+    description: Orientation (portrait or landscape)
+    variants:
+      - Portrait
+      - Landscape
+
+  Resolution:
+    description: Screen resolution
+    fields:
+      - value: "f32"
+      - unit: ResolutionUnit
+
+  ResolutionUnit:
+    description: Resolution unit
+    variants:
+      - Dpi  # dots per inch
+      - Dpcm  # dots per cm
+      - Dppx  # device pixel ratio
+
+  Scan:
+    description: Scanning process (for TV)
+    variants:
+      - Interlace
+      - Progressive
+
+  Update:
+    description: Output device update frequency
+    variants:
+      - None
+      - Slow
+      - Fast
+
+  HoverCapability:
+    description: Hover capability
+    variants:
+      - None
+      - Hover
+
+  PointerCapability:
+    description: Pointer accuracy
+    variants:
+      - None
+      - Coarse
+      - Fine
+
+  ColorScheme:
+    description: Preferred color scheme
+    variants:
+      - Light
+      - Dark
+
+  ReducedMotion:
+    description: Reduced motion preference
+    variants:
+      - NoPreference
+      - Reduce
+
+  Contrast:
+    description: Contrast preference
+    variants:
+      - NoPreference
+      - More
+      - Less
+
+  MediaCondition:
+    description: Media query condition (AND/OR/NOT combinations)
+    variants:
+      - Feature: { feature: MediaFeature, range: RangeType }
+      - And: { left: "Box<MediaCondition>", right: "Box<MediaCondition>" }
+      - Or: { left: "Box<MediaCondition>", right: "Box<MediaCondition>" }
+      - Not: { condition: "Box<MediaCondition>" }
+
+  RangeType:
+    description: Range comparison type
+    variants:
+      - Exact
+      - Min
+      - Max
+
+  MediaQuery:
+    description: Complete media query
+    fields:
+      - media_type: "Option<MediaType>"
+      - condition: "Option<MediaCondition>"
+      - negated: "bool"
+
+  MediaQueryList:
+    description: List of media queries
+    fields:
+      - queries: "Vec<MediaQuery>"
+
+  ViewportInfo:
+    description: Current viewport information
+    fields:
+      - width: "u32"
+      - height: "u32"
+      - device_width: "u32"
+      - device_height: "u32"
+      - device_pixel_ratio: "f32"
+      - orientation: Orientation
+      - color_bits: "u32"
+      - monochrome_bits: "u32"
+      - resolution_dpi: "f32"
+
+functions:
+  - name: parse_media_query
+    description: Parse CSS media query
+    params:
+      - name: input
+        type: "&str"
+    returns: "Result<MediaQuery, ParseError>"
+    tests:
+      - input: "screen"
+        expected: MediaQuery with media_type=Screen
+      - input: "(min-width: 768px)"
+        expected: MediaQuery with Width feature, min range
+      - input: "screen and (min-width: 768px)"
+        expected: MediaQuery with Screen type and min-width condition
+
+  - name: parse_media_query_list
+    description: Parse comma-separated media query list
+    params:
+      - name: input
+        type: "&str"
+    returns: "Result<MediaQueryList, ParseError>"
+    tests:
+      - input: "screen, print"
+        expected: MediaQueryList with 2 queries
+      - input: "screen and (min-width: 768px), (max-width: 480px)"
+        expected: MediaQueryList with 2 queries
+
+  - name: evaluate_media_query
+    description: Evaluate media query against viewport
+    params:
+      - name: query
+        type: "&MediaQuery"
+      - name: viewport
+        type: "&ViewportInfo"
+    returns: "bool"
+    tests:
+      - input: query="(min-width: 768px)", viewport=width:800px
+        expected: true
+      - input: query="(min-width: 768px)", viewport=width:400px
+        expected: false
+
+  - name: evaluate_media_feature
+    description: Evaluate single media feature
+    params:
+      - name: feature
+        type: "&MediaFeature"
+      - name: range
+        type: "&RangeType"
+      - name: viewport
+        type: "&ViewportInfo"
+    returns: "bool"
+    tests:
+      - input: Width(768px), Min, viewport=width:800px
+        expected: true
+      - input: Orientation(Portrait), Exact, viewport=orientation:Landscape
+        expected: false
+
+  - name: match_media_type
+    description: Check if media type matches
+    params:
+      - name: media_type
+        type: "&MediaType"
+      - name: viewport
+        type: "&ViewportInfo"
+    returns: "bool"
+    tests:
+      - input: Screen, viewport=screen_device
+        expected: true
+      - input: Print, viewport=screen_device
+        expected: false
+
+traits:
+  - name: MediaQueryEvaluator
+    description: Media query evaluation interface
+    methods:
+      - name: evaluate_list
+        params:
+          - name: query_list
+            type: "&MediaQueryList"
+          - name: viewport
+            type: "&ViewportInfo"
+        returns: "bool"
+        description: Returns true if ANY query in list matches
+
+      - name: matches
+        params:
+          - name: query
+            type: "&MediaQuery"
+          - name: viewport
+            type: "&ViewportInfo"
+        returns: "bool"
+
+test_requirements:
+  unit_tests:
+    - Media type parsing (all, screen, print, speech)
+    - Media feature parsing (width, height, orientation, resolution)
+    - Preference features (prefers-color-scheme, prefers-reduced-motion, prefers-contrast)
+    - Range queries (min-width, max-width, min-height, max-height)
+    - Logical operators (and, or, not)
+    - Complex queries with multiple conditions
+    - Media query list parsing
+    - Viewport creation and management
+    - Media query evaluation (true/false)
+    - Feature evaluation (all media features)
+  integration_tests:
+    - Complete media query pipeline (parse → evaluate)
+    - Multiple queries with different conditions
+    - Dynamic viewport updates
+    - Real-world responsive breakpoints
+  minimum_coverage: 80
+
+performance_targets:
+  - parse_media_query: "<500μs for typical query"
+  - evaluate_media_query: "<50μs per evaluation"
+
+dependencies:
+  - css_types: "^1.0.0"
+  - css_parser_core: "^1.0.0"
