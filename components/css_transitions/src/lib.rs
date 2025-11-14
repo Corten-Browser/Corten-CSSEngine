@@ -135,7 +135,9 @@ pub fn parse_transition_property(input: &str) -> Result<TransitionProperty, CssE
     let input = input.trim();
 
     if input.is_empty() {
-        return Err(CssError::ParseError("Empty transition property".to_string()));
+        return Err(CssError::ParseError(
+            "Empty transition property".to_string(),
+        ));
     }
 
     match input {
@@ -151,7 +153,9 @@ pub fn parse_transition_property(input: &str) -> Result<TransitionProperty, CssE
                     .collect();
 
                 if properties.is_empty() {
-                    return Err(CssError::ParseError("No valid properties found".to_string()));
+                    return Err(CssError::ParseError(
+                        "No valid properties found".to_string(),
+                    ));
                 }
 
                 Ok(TransitionProperty::Multiple(properties))
@@ -189,7 +193,9 @@ pub fn parse_transition_duration(input: &str) -> Result<TransitionDuration, CssE
             .map_err(|_| CssError::ParseError("Invalid duration value".to_string()))?;
 
         if duration_ms < 0.0 {
-            return Err(CssError::InvalidValue("Duration cannot be negative".to_string()));
+            return Err(CssError::InvalidValue(
+                "Duration cannot be negative".to_string(),
+            ));
         }
 
         Ok(TransitionDuration {
@@ -204,7 +210,9 @@ pub fn parse_transition_duration(input: &str) -> Result<TransitionDuration, CssE
             .map_err(|_| CssError::ParseError("Invalid duration value".to_string()))?;
 
         if duration < 0.0 {
-            return Err(CssError::InvalidValue("Duration cannot be negative".to_string()));
+            return Err(CssError::InvalidValue(
+                "Duration cannot be negative".to_string(),
+            ));
         }
 
         Ok(TransitionDuration { duration })
@@ -436,7 +444,9 @@ pub fn parse_transition(input: &str) -> Result<Transition, CssError> {
 }
 
 /// Extract timing function from transition string, handling functions with spaces
-fn extract_timing_function(input: &str) -> Result<(Vec<String>, Option<TransitionTimingFunction>), CssError> {
+fn extract_timing_function(
+    input: &str,
+) -> Result<(Vec<String>, Option<TransitionTimingFunction>), CssError> {
     let mut timing_function = None;
     let mut remaining_parts = Vec::new();
     let mut current_token = String::new();
@@ -631,9 +641,7 @@ fn evaluate_steps(count: u32, position: StepPosition, progress: f64) -> f64 {
 
     let steps = count as f64;
     match position {
-        StepPosition::Start => {
-            ((progress * steps).ceil() / steps).min(1.0)
-        }
+        StepPosition::Start => ((progress * steps).ceil() / steps).min(1.0),
         StepPosition::End => {
             // For "end", boundaries belong to the previous interval
             // Subtract tiny epsilon to handle exact boundary cases
@@ -660,11 +668,7 @@ pub trait TransitionEngine {
     ) -> TransitionState;
 
     /// Tick a transition and get current value
-    fn tick_transition(
-        &self,
-        state: &TransitionState,
-        current_time: f64,
-    ) -> Option<PropertyValue>;
+    fn tick_transition(&self, state: &TransitionState, current_time: f64) -> Option<PropertyValue>;
 
     /// Check if transition is complete
     fn is_transition_complete(&self, state: &TransitionState, current_time: f64) -> bool;
@@ -692,11 +696,7 @@ impl TransitionEngine for DefaultTransitionEngine {
         }
     }
 
-    fn tick_transition(
-        &self,
-        state: &TransitionState,
-        current_time: f64,
-    ) -> Option<PropertyValue> {
+    fn tick_transition(&self, state: &TransitionState, current_time: f64) -> Option<PropertyValue> {
         // Check if we're before the start time (still in delay)
         if current_time < state.start_time {
             return Some(state.start_value.clone());
