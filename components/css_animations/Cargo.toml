@@ -5,6 +5,10 @@ edition = "2021"
 rust-version = "1.75"
 
 [dependencies]
-# Component dependencies will be added as needed
 
 [dev-dependencies]
+criterion = "0.5"
+
+[[bench]]
+name = "animation_bench"
+harness = false
