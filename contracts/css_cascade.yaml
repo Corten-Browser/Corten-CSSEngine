@@ -1,0 +1,50 @@
+component: css_cascade
+version: 0.1.0
+type: core
+language: rust
+
+description: |
+  CSS cascade algorithm - specificity calculation, inheritance, and cascade resolution.
+
+public_api:
+  CascadeResolver:
+    methods:
+      - name: new
+        signature: "fn new() -> Self"
+
+      - name: resolve
+        description: Resolve CSS cascade for a set of rules
+        signature: "fn resolve(&self, rules: &[ApplicableRule]) -> CascadeResult"
+
+      - name: compute_specificity
+        description: Calculate selector specificity
+        signature: "fn compute_specificity(selector: &Selector) -> Specificity"
+
+      - name: apply_inheritance
+        description: Apply property inheritance from parent
+        signature: "fn apply_inheritance(parent: &ComputedValues, child: &mut ComputedValues)"
+
+public_types:
+  - name: ApplicableRule
+    description: Rule applicable to an element with its specificity
+    fields:
+      - rule: StyleRule
+      - specificity: Specificity
+      - origin: Origin
+
+  - name: Origin
+    description: Rule origin for cascade
+    variants:
+      - UserAgent    # Browser defaults
+      - User         # User preferences
+      - Author       # Page stylesheets
+
+  - name: CascadeResult
+    description: Result of cascade resolution
+    fields:
+      - properties: HashMap<PropertyId, PropertyValue>
+
+dependencies:
+  - css_types
+
+test_coverage_target: 95
