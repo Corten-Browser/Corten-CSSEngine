@@ -1,6 +1,6 @@
 //! Integration tests for CSS parser
 
-use css_parser_core::{CssParser, CssRule, Origin, ParseError};
+use css_parser_core::{CssParser, CssRule, Origin};
 
 #[test]
 fn test_parse_empty_stylesheet() {
