@@ -1,0 +1,24 @@
+name: css_layout_grid
+version: 0.1.0
+type: feature
+language: rust
+estimated_lines: 4000
+description: CSS Grid layout properties - grid container and item properties
+
+dependencies:
+  imports: [{"name": "css_types"}, {"name": "css_parser_values"}, {"name": "css_layout_box_model"}]
+
+public_api:
+  - src/lib.rs
+
+private_implementation:
+  - src/_internal/
+
+test_directories:
+  - tests/unit
+  - tests/integration
+  - benches
+
+quality_standards:
+  min_test_coverage: 80
+  enforce_tdd: true

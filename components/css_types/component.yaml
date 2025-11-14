@@ -1,0 +1,24 @@
+name: css_types
+version: 0.1.0
+type: base
+language: rust
+estimated_lines: 8000
+description: Shared type definitions for CSS engine - Color, Length, Unit, Specificity, enums
+
+dependencies:
+  imports: []
+
+public_api:
+  - src/lib.rs
+
+private_implementation:
+  - src/_internal/
+
+test_directories:
+  - tests/unit
+  - tests/integration
+  - benches
+
+quality_standards:
+  min_test_coverage: 80
+  enforce_tdd: true

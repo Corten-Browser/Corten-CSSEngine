@@ -1,0 +1,24 @@
+name: css_cascade
+version: 0.1.0
+type: core
+language: rust
+estimated_lines: 10000
+description: CSS cascade algorithm - specificity calculation, inheritance, initial values
+
+dependencies:
+  imports: [{"name": "css_types"}]
+
+public_api:
+  - src/lib.rs
+
+private_implementation:
+  - src/_internal/
+
+test_directories:
+  - tests/unit
+  - tests/integration
+  - benches
+
+quality_standards:
+  min_test_coverage: 80
+  enforce_tdd: true

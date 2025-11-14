@@ -1,0 +1,24 @@
+name: css_custom_properties
+version: 0.1.0
+type: feature
+language: rust
+estimated_lines: 7000
+description: CSS custom properties (variables) - registry, var() substitution
+
+dependencies:
+  imports: [{"name": "css_types"}, {"name": "css_parser_values"}]
+
+public_api:
+  - src/lib.rs
+
+private_implementation:
+  - src/_internal/
+
+test_directories:
+  - tests/unit
+  - tests/integration
+  - benches
+
+quality_standards:
+  min_test_coverage: 80
+  enforce_tdd: true

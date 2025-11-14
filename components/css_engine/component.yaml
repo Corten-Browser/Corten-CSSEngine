@@ -1,0 +1,24 @@
+name: css_engine
+version: 0.1.0
+type: integration
+language: rust
+estimated_lines: 8000
+description: Main CSS Engine - public API, state management, component orchestration
+
+dependencies:
+  imports: [{"name": "css_types"}, {"name": "css_parser_core"}, {"name": "css_parser_values"}, {"name": "css_cascade"}, {"name": "css_matcher_core"}, {"name": "css_matcher_pseudo"}, {"name": "css_stylist_core"}, {"name": "css_stylist_cache"}, {"name": "css_invalidation"}, {"name": "css_layout_box_model"}, {"name": "css_layout_flexbox"}, {"name": "css_layout_grid"}, {"name": "css_animations"}, {"name": "css_custom_properties"}]
+
+public_api:
+  - src/lib.rs
+
+private_implementation:
+  - src/_internal/
+
+test_directories:
+  - tests/unit
+  - tests/integration
+  - benches
+
+quality_standards:
+  min_test_coverage: 80
+  enforce_tdd: true
