@@ -1,0 +1,29 @@
+name: css_transforms
+version: 0.1.0
+type: feature
+language: rust
+estimated_lines: 4000
+description: CSS 2D and 3D transforms - translate, rotate, scale, skew, matrix, perspective
+
+dependencies:
+  imports:
+    - name: css_types
+      version: "^0.1.0"
+      import_from: "components.css_types"
+    - name: css_parser_core
+      version: "^0.1.0"
+      import_from: "components.css_parser_core"
+
+public_api:
+  - src/lib.rs
+
+private_implementation:
+  - src/_internal/
+
+test_directories:
+  - tests/unit
+  - tests/integration
+
+quality_standards:
+  min_test_coverage: 80
+  enforce_tdd: true
