@@ -1,0 +1,115 @@
+name: css_animations
+version: 0.1.0
+description: CSS animations and @keyframes support
+phase: 4
+
+dependencies:
+  - css_types
+  - css_parser_core
+
+public_api:
+  structs:
+    - name: Keyframes
+      description: Keyframe animation definition
+      fields:
+        - name: String
+        - keyframes: Vec<Keyframe>
+
+    - name: Keyframe
+      description: Single keyframe in animation
+      fields:
+        - offset: f32  # 0.0 to 1.0 (0% to 100%)
+        - properties: HashMap<String, String>
+
+    - name: Animation
+      description: Animation application to element
+      fields:
+        - name: String
+        - duration: f32  # seconds
+        - timing_function: TimingFunction
+        - delay: f32  # seconds
+        - iteration_count: IterationCount
+        - direction: AnimationDirection
+        - fill_mode: FillMode
+        - play_state: PlayState
+
+  enums:
+    - name: TimingFunction
+      description: Animation timing/easing function
+      variants:
+        - Ease
+        - Linear
+        - EaseIn
+        - EaseOut
+        - EaseInOut
+        - CubicBezier(f32, f32, f32, f32)
+        - Steps(i32, StepPosition)
+
+    - name: StepPosition
+      description: Step timing position
+      variants:
+        - Start
+        - End
+
+    - name: IterationCount
+      description: Animation iteration count
+      variants:
+        - Count(f32)
+        - Infinite
+
+    - name: AnimationDirection
+      description: Animation playback direction
+      variants:
+        - Normal
+        - Reverse
+        - Alternate
+        - AlternateReverse
+
+    - name: FillMode
+      description: Animation fill mode
+      variants:
+        - None
+        - Forwards
+        - Backwards
+        - Both
+
+    - name: PlayState
+      description: Animation play state
+      variants:
+        - Running
+        - Paused
+
+  traits:
+    - name: AnimationEngine
+      description: Animation computation and application
+      methods:
+        - name: tick
+          description: Update animations at given timestamp
+          signature: "fn tick(&mut self, timestamp_ms: f64) -> Vec<AnimationUpdate>"
+
+        - name: add_animation
+          description: Add animation to element
+          signature: "fn add_animation(&mut self, element_id: ElementId, animation: Animation)"
+
+        - name: pause_animation
+          description: Pause animation on element
+          signature: "fn pause_animation(&mut self, element_id: ElementId, animation_name: &str)"
+
+        - name: resume_animation
+          description: Resume paused animation
+          signature: "fn resume_animation(&mut self, element_id: ElementId, animation_name: &str)"
+
+test_contracts:
+  - Parse @keyframes rule
+  - Parse animation property shorthand
+  - Keyframe offset interpolation (0% to 100%)
+  - Timing function application (ease, linear, cubic-bezier)
+  - Iteration count (finite and infinite)
+  - Animation direction (normal, reverse, alternate)
+  - Fill mode behavior (none, forwards, backwards, both)
+  - Play state control (running, paused)
+  - Multiple animations on single element
+
+performance_requirements:
+  - Tick update: < 1ms for 100 active animations
+  - Interpolation: < 10μs per property

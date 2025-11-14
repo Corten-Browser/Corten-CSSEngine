@@ -1,0 +1,88 @@
+name: css_parser_values
+version: 0.1.0
+description: Advanced CSS value parsing including attribute selectors, complex values
+phase: 2
+
+dependencies:
+  - css_types
+
+public_api:
+  structs:
+    - name: AttributeSelector
+      description: Represents attribute selector like [attr=value]
+      fields:
+        - name: String
+        - namespace: Option<String>
+        - operator: AttributeOperator
+        - value: Option<String>
+        - case_sensitivity: CaseSensitivity
+
+    - name: ComplexValue
+      description: Parsed CSS value (numbers, strings, colors, functions)
+      fields:
+        - kind: ValueKind
+        - data: ValueData
+
+  enums:
+    - name: AttributeOperator
+      description: Attribute matching operators
+      variants:
+        - Exists          # [attr]
+        - Equals          # [attr=value]
+        - Includes        # [attr~=value] (whitespace-separated list)
+        - DashMatch       # [attr|=value] (starts with value-)
+        - Prefix          # [attr^=value]
+        - Suffix          # [attr$=value]
+        - Substring       # [attr*=value]
+
+    - name: CaseSensitivity
+      description: Attribute value case sensitivity
+      variants:
+        - CaseSensitive
+        - AsciiCaseInsensitive
+
+    - name: ValueKind
+      description: Type of CSS value
+      variants:
+        - Number
+        - Percentage
+        - Length
+        - Color
+        - String
+        - Url
+        - Function
+        - Keyword
+
+  functions:
+    - name: parse_attribute_selector
+      description: Parse attribute selector syntax
+      signature: "fn parse_attribute_selector(input: &str) -> Result<AttributeSelector, ParseError>"
+
+    - name: parse_value
+      description: Parse CSS property value
+      signature: "fn parse_value(input: &str, property: &str) -> Result<ComplexValue, ParseError>"
+
+    - name: parse_color_value
+      description: Parse color values (hex, rgb, rgba, hsl, hsla, named)
+      signature: "fn parse_color_value(input: &str) -> Result<Color, ParseError>"
+
+    - name: parse_function_value
+      description: Parse CSS functions like rgb(), calc(), var()
+      signature: "fn parse_function_value(input: &str) -> Result<FunctionValue, ParseError>"
+
+test_contracts:
+  - Parse [attr] existence selector
+  - Parse [attr=value] exact match
+  - Parse [attr~=value] whitespace-separated match
+  - Parse [attr^=prefix] prefix match
+  - Parse [attr$=suffix] suffix match
+  - Parse [attr*=substring] substring match
+  - Parse color values (hex, rgb, rgba, hsl, named)
+  - Parse url() function values
+  - Parse calc() expressions
+  - Parse gradient functions
+
+performance_requirements:
+  - Attribute selector parsing: < 5μs
+  - Color parsing: < 2μs
+  - Value parsing: < 10μs per value

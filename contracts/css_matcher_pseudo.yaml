@@ -1,0 +1,89 @@
+name: css_matcher_pseudo
+version: 0.1.0
+description: Pseudo-class and pseudo-element selector matching
+phase: 2
+
+dependencies:
+  - css_types
+  - css_matcher_core
+
+public_api:
+  traits:
+    - name: PseudoElementMatcher
+      description: Match pseudo-elements (::before, ::after, ::first-line, etc.)
+      methods:
+        - name: matches_pseudo_element
+          description: Check if element has matching pseudo-element
+          signature: "fn matches_pseudo_element(&self, element: &impl ElementLike, pseudo: &PseudoElement) -> bool"
+
+        - name: get_pseudo_element_style
+          description: Get style context for pseudo-element
+          signature: "fn get_pseudo_element_style(&self, element: &impl ElementLike, pseudo: &PseudoElement) -> Option<PseudoElementStyle>"
+
+  structs:
+    - name: PseudoClass
+      description: Represents a pseudo-class selector
+      fields:
+        - kind: PseudoClassKind
+        - argument: Option<String>
+
+    - name: PseudoElement
+      description: Represents a pseudo-element selector
+      fields:
+        - kind: PseudoElementKind
+
+  enums:
+    - name: PseudoClassKind
+      description: Types of pseudo-classes
+      variants:
+        - Hover
+        - Active
+        - Focus
+        - Visited
+        - Link
+        - FirstChild
+        - LastChild
+        - NthChild
+        - NthLastChild
+        - NthOfType
+        - NthLastOfType
+        - OnlyChild
+        - Empty
+        - Root
+        - Target
+        - Enabled
+        - Disabled
+        - Checked
+
+    - name: PseudoElementKind
+      description: Types of pseudo-elements
+      variants:
+        - Before
+        - After
+        - FirstLine
+        - FirstLetter
+        - Selection
+        - Marker
+
+  functions:
+    - name: evaluate_pseudo_class
+      description: Evaluate if element matches pseudo-class
+      signature: "fn evaluate_pseudo_class(element: &impl ElementLike, pseudo: &PseudoClass, context: &MatchContext) -> bool"
+
+    - name: parse_nth_selector
+      description: Parse nth-child/nth-of-type arguments (an+b notation)
+      signature: "fn parse_nth_selector(input: &str) -> Result<NthSelector, ParseError>"
+
+test_contracts:
+  - Hover pseudo-class matching
+  - Focus pseudo-class matching
+  - :nth-child(2n+1) parsing and matching
+  - :first-child, :last-child matching
+  - ::before, ::after pseudo-element handling
+  - :disabled, :checked form state matching
+  - Complex pseudo-class combinations
+
+performance_requirements:
+  - Pseudo-class evaluation: < 10μs per element
+  - Nth-selector parsing: < 1μs
+  - Memory overhead: < 100 bytes per pseudo-class

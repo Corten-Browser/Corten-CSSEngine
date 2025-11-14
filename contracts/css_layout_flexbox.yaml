@@ -1,0 +1,113 @@
+name: css_layout_flexbox
+version: 0.1.0
+description: CSS Flexbox layout computation
+phase: 3
+
+dependencies:
+  - css_types
+  - css_layout_box_model
+
+public_api:
+  enums:
+    - name: FlexDirection
+      description: Flex container direction
+      variants:
+        - Row
+        - RowReverse
+        - Column
+        - ColumnReverse
+
+    - name: FlexWrap
+      description: Flex wrap behavior
+      variants:
+        - NoWrap
+        - Wrap
+        - WrapReverse
+
+    - name: JustifyContent
+      description: Main axis alignment
+      variants:
+        - FlexStart
+        - FlexEnd
+        - Center
+        - SpaceBetween
+        - SpaceAround
+        - SpaceEvenly
+
+    - name: AlignItems
+      description: Cross axis alignment
+      variants:
+        - FlexStart
+        - FlexEnd
+        - Center
+        - Baseline
+        - Stretch
+
+    - name: AlignContent
+      description: Multi-line cross axis alignment
+      variants:
+        - FlexStart
+        - FlexEnd
+        - Center
+        - SpaceBetween
+        - SpaceAround
+        - Stretch
+
+  structs:
+    - name: FlexContainer
+      description: Flexbox container properties
+      fields:
+        - direction: FlexDirection
+        - wrap: FlexWrap
+        - justify_content: JustifyContent
+        - align_items: AlignItems
+        - align_content: AlignContent
+        - gap: Option<f32>
+        - row_gap: Option<f32>
+        - column_gap: Option<f32>
+
+    - name: FlexItem
+      description: Flexbox item properties
+      fields:
+        - flex_grow: f32
+        - flex_shrink: f32
+        - flex_basis: Option<Length>
+        - align_self: Option<AlignItems>
+        - order: i32
+
+    - name: FlexLayout
+      description: Computed flexbox layout
+      fields:
+        - items: Vec<FlexItemLayout>
+        - container_size: (f32, f32)
+
+    - name: FlexItemLayout
+      description: Layout position/size for a flex item
+      fields:
+        - x: f32
+        - y: f32
+        - width: f32
+        - height: f32
+
+  traits:
+    - name: FlexLayoutEngine
+      description: Flexbox layout computation engine
+      methods:
+        - name: compute_flex_layout
+          description: Compute layout for flex container and items
+          signature: "fn compute_flex_layout(&self, container: &FlexContainer, items: &[FlexItem], available_space: (f32, f32)) -> FlexLayout"
+
+test_contracts:
+  - Flex direction (row, column, row-reverse, column-reverse)
+  - Flex wrap (nowrap, wrap, wrap-reverse)
+  - Justify content alignment on main axis
+  - Align items on cross axis
+  - Flex grow/shrink behavior
+  - Flex basis resolution
+  - Multi-line flexbox wrapping
+  - Gap properties (gap, row-gap, column-gap)
+  - Order property sorting
+
+performance_requirements:
+  - Layout computation: < 500μs for 100 items
+  - Item positioning: < 5μs per item

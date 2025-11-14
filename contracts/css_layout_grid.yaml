@@ -1,0 +1,106 @@
+name: css_layout_grid
+version: 0.1.0
+description: CSS Grid layout computation
+phase: 3
+
+dependencies:
+  - css_types
+  - css_layout_box_model
+
+public_api:
+  enums:
+    - name: GridAutoFlow
+      description: Grid auto-placement algorithm
+      variants:
+        - Row
+        - Column
+        - RowDense
+        - ColumnDense
+
+    - name: TrackSizing
+      description: Grid track size specification
+      variants:
+        - Fixed(Length)           # px, em, etc.
+        - Flexible(f32)           # fr units
+        - MinContent
+        - MaxContent
+        - Auto
+
+  structs:
+    - name: GridContainer
+      description: CSS Grid container properties
+      fields:
+        - template_rows: Vec<TrackSizing>
+        - template_columns: Vec<TrackSizing>
+        - auto_rows: Vec<TrackSizing>
+        - auto_columns: Vec<TrackSizing>
+        - auto_flow: GridAutoFlow
+        - gap: Option<f32>
+        - row_gap: Option<f32>
+        - column_gap: Option<f32>
+        - justify_items: JustifyItems
+        - align_items: AlignItems
+
+    - name: GridItem
+      description: Grid item placement
+      fields:
+        - row_start: GridLine
+        - row_end: GridLine
+        - column_start: GridLine
+        - column_end: GridLine
+        - justify_self: Option<JustifySelf>
+        - align_self: Option<AlignSelf>
+
+    - name: GridLine
+      description: Grid line specification
+      variants:
+        - Auto
+        - LineNumber(i32)
+        - Span(i32)
+
+    - name: GridLayout
+      description: Computed grid layout
+      fields:
+        - items: Vec<GridItemLayout>
+        - track_sizes: GridTrackSizes
+        - container_size: (f32, f32)
+
+    - name: GridItemLayout
+      description: Layout position/size for grid item
+      fields:
+        - x: f32
+        - y: f32
+        - width: f32
+        - height: f32
+        - row: usize
+        - column: usize
+        - row_span: usize
+        - column_span: usize
+
+  traits:
+    - name: GridLayoutEngine
+      description: Grid layout computation engine
+      methods:
+        - name: compute_grid_layout
+          description: Compute layout for grid container and items
+          signature: "fn compute_grid_layout(&self, container: &GridContainer, items: &[GridItem], available_space: (f32, f32)) -> GridLayout"
+
+        - name: resolve_track_sizes
+          description: Resolve track sizes to pixel values
+          signature: "fn resolve_track_sizes(&self, tracks: &[TrackSizing], available_size: f32, gap: f32) -> Vec<f32>"
+
+test_contracts:
+  - Grid template rows/columns definition
+  - fr unit sizing
+  - Auto-placement algorithm (row, column, dense)
+  - Explicit grid item placement
+  - Grid item spanning multiple tracks
+  - Gap properties (gap, row-gap, column-gap)
+  - Alignment properties (justify-items, align-items)
+  - Auto tracks creation
+  - minmax() track sizing
+  - repeat() notation
+
+performance_requirements:
+  - Layout computation: < 1ms for 100 items
+  - Track sizing resolution: < 50μs
