@@ -1,0 +1,18 @@
+{
+  "project_name": "Corten-CSSEngine",
+  "version": "0.1.0",
+  "lifecycle_state": "pre-release",
+  "api_locked": false,
+  "breaking_changes_policy": "encouraged",
+  "description": "CSS Engine component for CortenBrowser - Rust-based CSS parsing, cascade resolution, and style computation",
+  "language": "rust",
+  "estimated_loc": 145000,
+  "development_phase": "initial",
+  "quality_gates": {
+    "min_test_coverage": 80,
+    "wpt_pass_rate_target": 85,
+    "performance_target": "within 1.5x of Blink"
+  },
+  "created_at": "2025-11-14",
+  "last_updated": "2025-11-14"
+}
