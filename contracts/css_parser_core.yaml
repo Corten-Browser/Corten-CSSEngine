@@ -1,0 +1,61 @@
+component: css_parser_core
+version: 0.1.0
+type: core
+language: rust
+
+description: |
+  Core CSS parsing functionality - tokenization, stylesheet parsing, and rule parsing.
+
+public_api:
+  CssParser:
+    methods:
+      - name: new
+        signature: "fn new() -> Self"
+
+      - name: parse
+        description: Parse CSS stylesheet from string
+        signature: "fn parse(&self, input: &str) -> Result<Stylesheet, ParseError>"
+        parameters:
+          - name: input
+            type: "&str"
+            description: CSS source code
+        returns:
+          type: "Result<Stylesheet, ParseError>"
+
+      - name: parse_rule
+        description: Parse a single CSS rule
+        signature: "fn parse_rule(&self, input: &str) -> Result<CssRule, ParseError>"
+
+public_types:
+  - name: Stylesheet
+    description: Parsed stylesheet representation
+    fields:
+      - rules: Vec<CssRule>
+      - origin: Origin
+
+  - name: CssRule
+    description: CSS rule types
+    variants:
+      - Style(StyleRule)
+      - Media(MediaRule)
+      - Import(ImportRule)
+      - FontFace(FontFaceRule)
+      - Keyframes(KeyframesRule)
+
+  - name: StyleRule
+    description: Style rule with selectors and declarations
+    fields:
+      - selectors: SelectorList
+      - declarations: Vec<PropertyDeclaration>
+
+  - name: ParseError
+    description: CSS parsing errors
+    fields:
+      - line: usize
+      - column: usize
+      - message: String
+
+dependencies:
+  - css_types
+
+test_coverage_target: 90

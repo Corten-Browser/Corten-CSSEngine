@@ -1,0 +1,206 @@
+name: css_transitions
+version: "1.0.0"
+description: CSS transitions for smooth property value changes
+
+types:
+  TransitionProperty:
+    description: Property to transition
+    variants:
+      - All
+      - None
+      - Property: { name: "String" }
+      - Multiple: { properties: "Vec<String>" }
+
+  TransitionDuration:
+    description: Transition duration
+    fields:
+      - duration: "f64"  # seconds
+
+  TransitionTimingFunction:
+    description: Timing function for transition
+    variants:
+      - Ease
+      - Linear
+      - EaseIn
+      - EaseOut
+      - EaseInOut
+      - CubicBezier: { x1: "f64", y1: "f64", x2: "f64", y2: "f64" }
+      - Steps: { count: "u32", position: StepPosition }
+
+  StepPosition:
+    description: Step timing position
+    variants:
+      - Start
+      - End
+
+  TransitionDelay:
+    description: Delay before transition starts
+    fields:
+      - delay: "f64"  # seconds
+
+  Transition:
+    description: Complete transition specification
+    fields:
+      - property: TransitionProperty
+      - duration: TransitionDuration
+      - timing_function: TransitionTimingFunction
+      - delay: TransitionDelay
+
+  TransitionState:
+    description: Active transition state
+    fields:
+      - property: "String"
+      - start_value: PropertyValue
+      - end_value: PropertyValue
+      - start_time: "f64"
+      - duration: "f64"
+      - timing_function: TransitionTimingFunction
+
+  PropertyValue:
+    description: Generic property value for transitions
+    variants:
+      - Length: { value: Length }
+      - Color: { value: Color }
+      - Number: { value: "f64" }
+      - Percentage: { value: "f32" }
+      - Transform: { value: Transform }
+
+functions:
+  - name: parse_transition_property
+    description: Parse transition-property value
+    params:
+      - name: input
+        type: "&str"
+    returns: "Result<TransitionProperty, ParseError>"
+    tests:
+      - input: "all"
+        expected: TransitionProperty::All
+      - input: "opacity"
+        expected: TransitionProperty::Property("opacity")
+      - input: "opacity, transform"
+        expected: TransitionProperty::Multiple(["opacity", "transform"])
+
+  - name: parse_transition_duration
+    description: Parse transition-duration value
+    params:
+      - name: input
+        type: "&str"
+    returns: "Result<TransitionDuration, ParseError>"
+    tests:
+      - input: "0.3s"
+        expected: TransitionDuration{duration:0.3}
+      - input: "300ms"
+        expected: TransitionDuration{duration:0.3}
+
+  - name: parse_transition_timing_function
+    description: Parse transition-timing-function value
+    params:
+      - name: input
+        type: "&str"
+    returns: "Result<TransitionTimingFunction, ParseError>"
+    tests:
+      - input: "ease"
+        expected: TransitionTimingFunction::Ease
+      - input: "cubic-bezier(0.4, 0, 0.2, 1)"
+        expected: TransitionTimingFunction::CubicBezier{x1:0.4, y1:0, x2:0.2, y2:1}
+
+  - name: parse_transition
+    description: Parse transition shorthand property
+    params:
+      - name: input
+        type: "&str"
+    returns: "Result<Transition, ParseError>"
+    tests:
+      - input: "opacity 0.3s ease"
+        expected: Transition with property=opacity, duration=0.3s, timing=ease
+      - input: "all 1s cubic-bezier(0.4, 0, 0.2, 1) 0.5s"
+        expected: Transition with all properties, 1s duration, cubic-bezier, 0.5s delay
+
+  - name: interpolate_value
+    description: Interpolate between two property values
+    params:
+      - name: start
+        type: "&PropertyValue"
+      - name: end
+        type: "&PropertyValue"
+      - name: progress
+        type: "f64"
+      - name: timing_function
+        type: "&TransitionTimingFunction"
+    returns: "PropertyValue"
+    tests:
+      - input: start=Length(0px), end=Length(100px), progress=0.5
+        expected: Length(50px)
+      - input: start=Color(red), end=Color(blue), progress=0.5
+        expected: Color(purple-ish)
+
+  - name: evaluate_timing_function
+    description: Evaluate timing function at given progress
+    params:
+      - name: timing_function
+        type: "&TransitionTimingFunction"
+      - name: progress
+        type: "f64"
+    returns: "f64"
+    tests:
+      - input: Linear, progress=0.5
+        expected: 0.5
+      - input: Ease, progress=0.5
+        expected: ~0.76 (ease curve)
+
+traits:
+  - name: TransitionEngine
+    description: Transition management interface
+    methods:
+      - name: start_transition
+        params:
+          - name: property
+            type: "&str"
+          - name: start_value
+            type: "PropertyValue"
+          - name: end_value
+            type: "PropertyValue"
+          - name: transition
+            type: "&Transition"
+          - name: current_time
+            type: "f64"
+        returns: "TransitionState"
+
+      - name: tick_transition
+        params:
+          - name: state
+            type: "&TransitionState"
+          - name: current_time
+            type: "f64"
+        returns: "Option<PropertyValue>"
+
+      - name: is_transition_complete
+        params:
+          - name: state
+            type: "&TransitionState"
+          - name: current_time
+            type: "f64"
+        returns: "bool"
+
+test_requirements:
+  unit_tests:
+    - Transition property parsing (all, none, specific, multiple)
+    - Duration parsing (s, ms)
+    - Timing function parsing (keywords, cubic-bezier, steps)
+    - Delay parsing
+    - Value interpolation (length, color, number, percentage)
+    - Timing function evaluation (ease, linear, cubic-bezier, steps)
+  integration_tests:
+    - Complete transition pipeline (start → tick → complete)
+    - Multiple simultaneous transitions
+    - Transition interruption and restart
+  minimum_coverage: 80
+
+performance_targets:
+  - interpolate_value: "<10μs per interpolation"
+  - evaluate_timing_function: "<5μs per evaluation"
+
+dependencies:
+  - css_types: "^1.0.0"
+  - css_parser_core: "^1.0.0"
+  - css_animations: "^1.0.0"

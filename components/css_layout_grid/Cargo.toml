@@ -1,0 +1,11 @@
+[package]
+name = "css-layout-grid"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+
+[dependencies]
+css-types = { path = "../css_types" }
+css-layout-box-model = { path = "../css_layout_box_model" }
+
+[dev-dependencies]

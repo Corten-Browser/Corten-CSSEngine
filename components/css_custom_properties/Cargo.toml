@@ -1,0 +1,10 @@
+[package]
+name = "css-custom-properties"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+
+[dependencies]
+css-types = { path = "../css_types" }
+
+[dev-dependencies]

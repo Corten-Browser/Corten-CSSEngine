@@ -1,0 +1,29 @@
+name: css_media_queries
+version: 0.1.0
+type: core
+language: rust
+estimated_lines: 7000
+description: CSS media query parsing and evaluation for responsive design - viewport dimensions, orientation, color scheme, reduced motion
+
+dependencies:
+  imports:
+    - name: css_types
+      version: "^0.1.0"
+      import_from: "components.css_types"
+    - name: css_parser_core
+      version: "^0.1.0"
+      import_from: "components.css_parser_core"
+
+public_api:
+  - src/lib.rs
+
+private_implementation:
+  - src/_internal/
+
+test_directories:
+  - tests/unit
+  - tests/integration
+
+quality_standards:
+  min_test_coverage: 80
+  enforce_tdd: true

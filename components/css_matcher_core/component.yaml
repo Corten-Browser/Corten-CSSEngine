@@ -1,0 +1,24 @@
+name: css_matcher_core
+version: 0.1.0
+type: core
+language: rust
+estimated_lines: 8000
+description: Core selector matching - simple, compound, complex selectors
+
+dependencies:
+  imports: [{"name": "css_types"}]
+
+public_api:
+  - src/lib.rs
+
+private_implementation:
+  - src/_internal/
+
+test_directories:
+  - tests/unit
+  - tests/integration
+  - benches
+
+quality_standards:
+  min_test_coverage: 80
+  enforce_tdd: true

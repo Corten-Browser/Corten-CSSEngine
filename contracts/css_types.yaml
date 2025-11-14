@@ -1,0 +1,57 @@
+component: css_types
+version: 0.1.0
+type: base
+language: rust
+
+description: |
+  Shared type definitions for CSS engine - Color, Length, Unit, Specificity, and basic data structures.
+
+public_types:
+  - name: Color
+    description: RGB/RGBA color representation
+    fields:
+      - r: u8
+      - g: u8
+      - b: u8
+      - a: f32
+
+  - name: Length
+    description: CSS length value with unit
+    fields:
+      - value: f32
+      - unit: LengthUnit
+
+  - name: LengthUnit
+    description: CSS length units
+    variants:
+      - Px        # Pixels
+      - Em        # Relative to font size
+      - Rem       # Relative to root font size
+      - Percent   # Percentage
+      - Vw        # Viewport width
+      - Vh        # Viewport height
+
+  - name: Specificity
+    description: CSS selector specificity (a, b, c)
+    fields:
+      - id_selectors: u32      # a
+      - class_selectors: u32   # b
+      - type_selectors: u32    # c
+
+  - name: CssError
+    description: Error type for CSS operations
+    variants:
+      - ParseError(String)
+      - InvalidValue(String)
+      - OutOfRange(String)
+
+exported_traits:
+  - name: CssValue
+    description: Trait for CSS values that can be parsed and serialized
+    methods:
+      - parse: fn(input: &str) -> Result<Self, CssError>
+      - serialize: fn(&self) -> String
+
+dependencies: []
+
+test_coverage_target: 90

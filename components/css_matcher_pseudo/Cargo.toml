@@ -1,0 +1,11 @@
+[package]
+name = "css-matcher-pseudo"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+
+[dependencies]
+css-types = { path = "../css_types" }
+css-matcher-core = { path = "../css_matcher_core" }
+
+[dev-dependencies]

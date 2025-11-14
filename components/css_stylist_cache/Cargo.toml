@@ -1,0 +1,14 @@
+[package]
+name = "css-stylist-cache"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+
+[dependencies]
+# Component dependencies
+css-types = { path = "../css_types" }
+css-stylist-core = { path = "../css_stylist_core" }
+css-matcher-core = { path = "../css_matcher_core" }
+servo_arc = "0.3"
+
+[dev-dependencies]

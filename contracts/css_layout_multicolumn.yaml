@@ -1,0 +1,167 @@
+name: css_layout_multicolumn
+version: "1.0.0"
+description: CSS multi-column layout computation
+
+types:
+  ColumnCount:
+    description: Number of columns
+    variants:
+      - Auto
+      - Count: { value: "u32" }
+
+  ColumnWidth:
+    description: Column width specification
+    variants:
+      - Auto
+      - Length: { value: Length }
+
+  ColumnGap:
+    description: Gap between columns
+    variants:
+      - Normal
+      - Length: { value: Length }
+
+  ColumnRule:
+    description: Rule (border) between columns
+    fields:
+      - width: Length
+      - style: BorderStyle
+      - color: Color
+
+  ColumnSpan:
+    description: Column spanning behavior
+    variants:
+      - None
+      - All
+
+  ColumnFill:
+    description: How to balance content across columns
+    variants:
+      - Balance
+      - Auto
+
+  MultiColumnLayout:
+    description: Complete multi-column layout configuration
+    fields:
+      - column_count: ColumnCount
+      - column_width: ColumnWidth
+      - column_gap: ColumnGap
+      - column_rule: "Option<ColumnRule>"
+      - column_span: ColumnSpan
+      - column_fill: ColumnFill
+
+  ComputedColumns:
+    description: Computed column layout details
+    fields:
+      - column_count: "u32"
+      - column_width: f32
+      - gap_width: f32
+      - total_width: f32
+
+functions:
+  - name: parse_column_count
+    description: Parse column-count property
+    params:
+      - name: input
+        type: "&str"
+    returns: "Result<ColumnCount, ParseError>"
+    tests:
+      - input: "auto"
+        expected: ColumnCount::Auto
+      - input: "3"
+        expected: ColumnCount::Count(3)
+
+  - name: parse_column_width
+    description: Parse column-width property
+    params:
+      - name: input
+        type: "&str"
+    returns: "Result<ColumnWidth, ParseError>"
+    tests:
+      - input: "auto"
+        expected: ColumnWidth::Auto
+      - input: "200px"
+        expected: ColumnWidth::Length(200px)
+
+  - name: parse_column_gap
+    description: Parse column-gap property
+    params:
+      - name: input
+        type: "&str"
+    returns: "Result<ColumnGap, ParseError>"
+    tests:
+      - input: "normal"
+        expected: ColumnGap::Normal
+      - input: "1em"
+        expected: ColumnGap::Length(1em)
+
+  - name: parse_column_rule
+    description: Parse column-rule shorthand property
+    params:
+      - name: input
+        type: "&str"
+    returns: "Result<ColumnRule, ParseError>"
+    tests:
+      - input: "1px solid black"
+        expected: ColumnRule{width:1px, style:Solid, color:Black}
+
+  - name: compute_column_layout
+    description: Compute actual column count and widths
+    params:
+      - name: config
+        type: "&MultiColumnLayout"
+      - name: available_width
+        type: "f32"
+    returns: "ComputedColumns"
+    tests:
+      - input: count=3, width=auto, container=600px
+        expected: ComputedColumns{count:3, width:200px each}
+      - input: count=auto, width=200px, container=650px
+        expected: ComputedColumns{count:3, width:200px}
+
+  - name: balance_content
+    description: Balance content height across columns
+    params:
+      - name: content_height
+        type: "f32"
+      - name: column_count
+        type: "u32"
+    returns: "f32"
+    tests:
+      - input: height=1000px, columns=4
+        expected: 250px per column
+
+traits:
+  - name: MultiColumnComputer
+    description: Multi-column layout computation interface
+    methods:
+      - name: compute_layout
+        params:
+          - name: config
+            type: "&MultiColumnLayout"
+          - name: available_width
+            type: "f32"
+          - name: content_height
+            type: "f32"
+        returns: "ComputedColumns"
+
+test_requirements:
+  unit_tests:
+    - Column count parsing (auto, integer)
+    - Column width parsing (auto, length)
+    - Column gap parsing (normal, length)
+    - Column rule parsing (width, style, color)
+    - Column layout computation (count, width, gap)
+    - Content balancing across columns
+  integration_tests:
+    - Complete multi-column layout pipeline
+    - Auto column count calculation
+    - Auto column width calculation
+  minimum_coverage: 80
+
+performance_targets:
+  - compute_column_layout: "<100μs for typical layout"
+
+dependencies:
+  - css_types: "^1.0.0"
+  - css_parser_core: "^1.0.0"

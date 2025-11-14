@@ -1,0 +1,17 @@
+[package]
+name = "css-stylist-core"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+
+[dependencies]
+servo_arc = "0.3"
+thiserror = "1.0"
+
+# Component dependencies
+css-types = { path = "../css_types" }
+css-cascade = { path = "../css_cascade" }
+css-matcher-core = { path = "../css_matcher_core" }
+
+[dev-dependencies]
+criterion = "0.5"

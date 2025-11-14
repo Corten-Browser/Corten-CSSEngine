@@ -1,0 +1,12 @@
+[package]
+name = "css-transitions"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+
+[dependencies]
+css-types = { path = "../css_types" }
+css-parser-core = { path = "../css_parser_core" }
+css-animations = { path = "../css_animations" }
+
+[dev-dependencies]

@@ -1,0 +1,24 @@
+name: css_matcher_pseudo
+version: 0.1.0
+type: core
+language: rust
+estimated_lines: 4000
+description: Pseudo-class and pseudo-element matching
+
+dependencies:
+  imports: [{"name": "css_types", "name": "css_matcher_core"}]
+
+public_api:
+  - src/lib.rs
+
+private_implementation:
+  - src/_internal/
+
+test_directories:
+  - tests/unit
+  - tests/integration
+  - benches
+
+quality_standards:
+  min_test_coverage: 80
+  enforce_tdd: true

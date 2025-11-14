@@ -1,0 +1,101 @@
+name: css_layout_box_model
+version: 0.1.0
+description: CSS box model computation (content, padding, border, margin)
+phase: 2
+
+dependencies:
+  - css_types
+  - css_stylist_core
+
+public_api:
+  structs:
+    - name: BoxModel
+      description: Computed box model for an element
+      fields:
+        - content: Rect
+        - padding: EdgeSizes
+        - border: EdgeSizes
+        - margin: EdgeSizes
+        - box_sizing: BoxSizing
+
+    - name: Rect
+      description: Rectangle dimensions
+      fields:
+        - x: f32
+        - y: f32
+        - width: f32
+        - height: f32
+
+    - name: EdgeSizes
+      description: Sizes for all four edges (top, right, bottom, left)
+      fields:
+        - top: f32
+        - right: f32
+        - bottom: f32
+        - left: f32
+
+  enums:
+    - name: BoxSizing
+      description: Box sizing model
+      variants:
+        - ContentBox   # width/height = content only
+        - BorderBox    # width/height = content + padding + border
+
+    - name: Display
+      description: Display property values
+      variants:
+        - Block
+        - Inline
+        - InlineBlock
+        - None
+        - Flex
+        - Grid
+        - Table
+
+  traits:
+    - name: BoxModelCalculator
+      description: Calculate box model from computed styles
+      methods:
+        - name: compute_box_model
+          description: Compute complete box model for element
+          signature: "fn compute_box_model(&self, style: &ComputedValues, containing_block: &Rect) -> BoxModel"
+
+        - name: resolve_width
+          description: Resolve width value to pixels
+          signature: "fn resolve_width(&self, width: &Length, containing_block_width: f32) -> f32"
+
+        - name: resolve_height
+          description: Resolve height value to pixels
+          signature: "fn resolve_height(&self, height: &Length, containing_block_height: f32) -> f32"
+
+  functions:
+    - name: compute_content_box
+      description: Compute content box dimensions
+      signature: "fn compute_content_box(style: &ComputedValues, containing_block: &Rect) -> Rect"
+
+    - name: compute_padding
+      description: Compute padding for all edges
+      signature: "fn compute_padding(style: &ComputedValues, containing_block_width: f32) -> EdgeSizes"
+
+    - name: compute_border
+      description: Compute border widths for all edges
+      signature: "fn compute_border(style: &ComputedValues) -> EdgeSizes"
+
+    - name: compute_margin
+      description: Compute margins for all edges
+      signature: "fn compute_margin(style: &ComputedValues, containing_block_width: f32) -> EdgeSizes"
+
+test_contracts:
+  - Compute box model with box-sizing: content-box
+  - Compute box model with box-sizing: border-box
+  - Resolve percentage widths
+  - Resolve auto margins (centering)
+  - Compute padding with percentage values
+  - Handle min-width/max-width constraints
+  - Handle min-height/max-height constraints
+  - Collapsing margins between blocks
+
+performance_requirements:
+  - Box model computation: < 50μs per element
+  - Width/height resolution: < 5μs
+  - Memory: < 200 bytes per box model

@@ -1,0 +1,24 @@
+name: css_invalidation
+version: 0.1.0
+type: feature
+language: rust
+estimated_lines: 8000
+description: Incremental restyle - element/subtree invalidation, bloom filter
+
+dependencies:
+  imports: [{"name": "css_types"}, {"name": "css_matcher_core"}]
+
+public_api:
+  - src/lib.rs
+
+private_implementation:
+  - src/_internal/
+
+test_directories:
+  - tests/unit
+  - tests/integration
+  - benches
+
+quality_standards:
+  min_test_coverage: 80
+  enforce_tdd: true

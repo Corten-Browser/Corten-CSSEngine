@@ -1,0 +1,143 @@
+name: css_transforms
+version: "1.0.0"
+description: CSS transform property parsing and computation (2D and 3D transforms)
+
+types:
+  TransformFunction:
+    description: Individual transform function
+    variants:
+      - Translate: { x: Length, y: Length }
+      - TranslateX: { value: Length }
+      - TranslateY: { value: Length }
+      - TranslateZ: { value: Length }
+      - Translate3d: { x: Length, y: Length, z: Length }
+      - Scale: { x: f32, y: f32 }
+      - ScaleX: { value: f32 }
+      - ScaleY: { value: f32 }
+      - ScaleZ: { value: f32 }
+      - Scale3d: { x: f32, y: f32, z: f32 }
+      - Rotate: { angle: Angle }
+      - RotateX: { angle: Angle }
+      - RotateY: { angle: Angle }
+      - RotateZ: { angle: Angle }
+      - Rotate3d: { x: f32, y: f32, z: f32, angle: Angle }
+      - Skew: { x: Angle, y: Angle }
+      - SkewX: { angle: Angle }
+      - SkewY: { angle: Angle }
+      - Matrix: { a: f32, b: f32, c: f32, d: f32, tx: f32, ty: f32 }
+      - Matrix3d: { values: "[f32; 16]" }
+      - Perspective: { value: Length }
+
+  Transform:
+    description: Complete transform value (list of functions)
+    fields:
+      - functions: "Vec<TransformFunction>"
+
+  TransformOrigin:
+    description: Transform origin point
+    fields:
+      - x: Length
+      - y: Length
+      - z: Length
+
+  TransformStyle:
+    description: Transform style (preserve-3d or flat)
+    variants:
+      - Flat
+      - Preserve3d
+
+  TransformMatrix:
+    description: Computed 4x4 transformation matrix
+    fields:
+      - matrix: "[[f32; 4]; 4]"
+
+functions:
+  - name: parse_transform
+    description: Parse CSS transform property value
+    params:
+      - name: input
+        type: "&str"
+    returns: "Result<Transform, ParseError>"
+    tests:
+      - input: "translate(10px, 20px)"
+        expected: Transform with Translate{x:10px, y:20px}
+      - input: "rotate(45deg)"
+        expected: Transform with Rotate{angle:45deg}
+      - input: "scale(2) rotate(45deg)"
+        expected: Transform with Scale{x:2, y:2} and Rotate{angle:45deg}
+
+  - name: parse_transform_origin
+    description: Parse transform-origin property value
+    params:
+      - name: input
+        type: "&str"
+    returns: "Result<TransformOrigin, ParseError>"
+    tests:
+      - input: "center center"
+        expected: TransformOrigin{x:50%, y:50%, z:0}
+      - input: "10px 20px"
+        expected: TransformOrigin{x:10px, y:20px, z:0}
+
+  - name: compute_transform_matrix
+    description: Compute 4x4 matrix from transform list
+    params:
+      - name: transform
+        type: "&Transform"
+      - name: reference_box
+        type: "&Rect"
+    returns: "TransformMatrix"
+    tests:
+      - input: translate(10px, 20px), box=100x100
+        expected: Matrix with tx=10, ty=20
+      - input: rotate(90deg), box=100x100
+        expected: Matrix with rotation applied
+
+  - name: apply_transform_origin
+    description: Apply transform origin to transformation matrix
+    params:
+      - name: matrix
+        type: "&mut TransformMatrix"
+      - name: origin
+        type: "&TransformOrigin"
+      - name: reference_box
+        type: "&Rect"
+    returns: "()"
+    tests:
+      - input: origin=50% 50%, box=100x100
+        expected: Matrix adjusted for center origin
+
+traits:
+  - name: TransformComputer
+    description: Transform computation interface
+    methods:
+      - name: compute_transform
+        params:
+          - name: transform
+            type: "&Transform"
+          - name: origin
+            type: "&TransformOrigin"
+          - name: reference_box
+            type: "&Rect"
+        returns: "TransformMatrix"
+
+test_requirements:
+  unit_tests:
+    - Transform function parsing (translate, rotate, scale, skew, matrix)
+    - 3D transform functions (translate3d, rotate3d, scale3d)
+    - Transform origin parsing
+    - Multiple transform composition
+    - Matrix computation (2D and 3D)
+    - Transform origin application
+  integration_tests:
+    - Complete transform pipeline (parse → compute → apply)
+    - Transform chain composition
+    - 3D transform computation
+  minimum_coverage: 80
+
+performance_targets:
+  - parse_transform: "<100μs for typical transform"
+  - compute_transform_matrix: "<50μs for 2D, <200μs for 3D"
+
+dependencies:
+  - css_types: "^1.0.0"
+  - css_parser_core: "^1.0.0"

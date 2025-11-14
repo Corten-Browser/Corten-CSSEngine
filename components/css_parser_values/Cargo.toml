@@ -1,0 +1,17 @@
+[package]
+name = "css-parser-values"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+
+[dependencies]
+# Dependency on css_types component
+css-types = { path = "../css_types" }
+
+[dev-dependencies]
+# For benchmarking
+criterion = "0.5"
+
+[[bench]]
+name = "parsing_bench"
+harness = false

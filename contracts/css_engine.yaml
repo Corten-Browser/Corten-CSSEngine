@@ -1,0 +1,89 @@
+component: css_engine
+version: 0.1.0
+type: integration
+language: rust
+
+description: |
+  Main CSS Engine public API - entry point for parsing CSS, computing styles, and managing the style system.
+
+public_api:
+  CssEngine:
+    description: Main CSS engine interface
+    methods:
+      - name: new
+        description: Create a new CSS engine instance
+        signature: "fn new() -> Self"
+
+      - name: parse_stylesheet
+        description: Parse a CSS stylesheet from string
+        signature: "fn parse_stylesheet(&mut self, css: &str, source_url: Option<&str>) -> Result<StyleSheetId, CssError>"
+        parameters:
+          - name: css
+            type: "&str"
+            description: CSS source code
+          - name: source_url
+            type: "Option<&str>"
+            description: Optional URL for error reporting
+        returns:
+          type: "Result<StyleSheetId, CssError>"
+          description: ID of parsed stylesheet or error
+
+      - name: set_inline_style
+        description: Set inline style for an element
+        signature: "fn set_inline_style(&mut self, element_id: ElementId, style: &str) -> Result<(), CssError>"
+
+      - name: compute_styles
+        description: Compute styles for a DOM tree
+        signature: "fn compute_styles(&mut self, dom_root: &DomNode) -> Result<StyleTree, CssError>"
+
+      - name: get_computed_style
+        description: Get computed style for specific element
+        signature: "fn get_computed_style(&self, element_id: ElementId) -> Result<ComputedStyle, CssError>"
+
+      - name: invalidate_styles
+        description: Invalidate styles for incremental recomputation
+        signature: "fn invalidate_styles(&mut self, invalidation: StyleInvalidation) -> Result<(), CssError>"
+
+public_types:
+  - name: StyleSheetId
+    description: Unique identifier for parsed stylesheet
+    type: "newtype(u32)"
+
+  - name: ElementId
+    description: Unique identifier for DOM element
+    type: "newtype(u64)"
+
+  - name: StyleTree
+    description: Computed style tree
+    fields:
+      - root: StyleNode
+
+  - name: StyleNode
+    description: Single styled node
+    fields:
+      - element_id: ElementId
+      - computed_style: ComputedStyle
+      - children: Vec<StyleNode>
+
+  - name: ComputedStyle
+    description: Computed CSS properties for an element
+    note: "Contains all computed CSS property values"
+
+  - name: StyleInvalidation
+    description: Type of style invalidation
+    variants:
+      - AttributeChange
+      - ClassChange
+      - ElementInserted
+      - ElementRemoved
+
+dependencies:
+  - css_types
+  - css_parser_core
+  - css_parser_values
+  - css_cascade
+  - css_matcher_core
+  - css_stylist_core
+
+test_coverage_target: 85
+performance_target: "<50ms for 10,000 elements"

@@ -1,0 +1,90 @@
+name: css_stylist_cache
+version: 0.1.0
+description: Style sharing and caching optimizations
+phase: 5
+
+dependencies:
+  - css_types
+  - css_stylist_core
+
+public_api:
+  structs:
+    - name: StyleCache
+      description: Cache for computed styles
+      fields:
+        - cache: HashMap<StyleKey, ComputedValues>
+        - hits: u64
+        - misses: u64
+
+    - name: StyleKey
+      description: Key for style cache lookup
+      fields:
+        - selector_hash: u64
+        - parent_hash: Option<u64>
+        - state_flags: StateFlags
+
+    - name: StateFlags
+      description: Element state for caching
+      fields:
+        - hover: bool
+        - active: bool
+        - focus: bool
+        - visited: bool
+
+    - name: StyleSharing
+      description: Style sharing between similar elements
+      fields:
+        - shared_styles: HashMap<SharingKey, Arc<ComputedValues>>
+        - sharing_candidates: Vec<ElementId>
+
+    - name: SharingKey
+      description: Key for style sharing
+      fields:
+        - element_name: String
+        - class_hash: u64
+        - parent_hash: Option<u64>
+
+  traits:
+    - name: StyleCacheManager
+      description: Manage style caching and sharing
+      methods:
+        - name: get_cached_style
+          description: Retrieve cached style if available
+          signature: "fn get_cached_style(&self, key: &StyleKey) -> Option<&ComputedValues>"
+
+        - name: cache_style
+          description: Store computed style in cache
+          signature: "fn cache_style(&mut self, key: StyleKey, style: ComputedValues)"
+
+        - name: find_sharing_candidate
+          description: Find element that can share style
+          signature: "fn find_sharing_candidate(&self, element: &impl ElementLike) -> Option<Arc<ComputedValues>>"
+
+        - name: invalidate_cache
+          description: Invalidate cached styles
+          signature: "fn invalidate_cache(&mut self, selector: Option<&str>)"
+
+  functions:
+    - name: can_share_style
+      description: Determine if two elements can share styles
+      signature: "fn can_share_style(elem1: &impl ElementLike, elem2: &impl ElementLike) -> bool"
+
+    - name: compute_style_key
+      description: Compute cache key for element
+      signature: "fn compute_style_key(element: &impl ElementLike) -> StyleKey"
+
+test_contracts:
+  - Cache hit on repeated style computation
+  - Cache miss on first computation
+  - Style sharing between identical elements
+  - Cache invalidation on style changes
+  - State-dependent caching (hover, focus)
+  - Parent-dependent cache keys
+  - Sharing candidate selection
+  - Cache size limits and eviction
+
+performance_requirements:
+  - Cache lookup: < 1μs
+  - Sharing candidate search: < 10μs
+  - Cache hit rate target: > 60%
+  - Memory overhead: < 50MB for 10,000 elements

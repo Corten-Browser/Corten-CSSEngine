@@ -1,0 +1,101 @@
+name: css_invalidation
+version: 0.1.0
+description: Incremental style invalidation for performance
+phase: 5
+
+dependencies:
+  - css_types
+  - css_matcher_core
+
+public_api:
+  enums:
+    - name: InvalidationType
+      description: Type of style invalidation
+      variants:
+        - Full              # Full restyle required
+        - Subtree           # Subtree restyle required
+        - Element           # Single element restyle
+        - Attribute         # Attribute change
+        - Class             # Class change
+        - State             # State change (hover, focus)
+
+    - name: InvalidationScope
+      description: Scope of invalidation
+      variants:
+        - Global            # All elements
+        - Selector(String)  # Elements matching selector
+        - Element(ElementId)  # Specific element
+        - Subtree(ElementId)  # Element and descendants
+
+  structs:
+    - name: InvalidationSet
+      description: Set of invalidations to process
+      fields:
+        - invalidations: Vec<Invalidation>
+        - affected_elements: HashSet<ElementId>
+
+    - name: Invalidation
+      description: Single invalidation event
+      fields:
+        - invalidation_type: InvalidationType
+        - scope: InvalidationScope
+        - timestamp: u64
+
+    - name: InvalidationTracker
+      description: Tracks which elements need restyl
+
+ing
+      fields:
+        - dirty_elements: HashSet<ElementId>
+        - dirty_subtrees: HashSet<ElementId>
+        - pending_invalidations: Vec<Invalidation>
+
+  traits:
+    - name: InvalidationEngine
+      description: Manage incremental style invalidation
+      methods:
+        - name: invalidate
+          description: Record invalidation event
+          signature: "fn invalidate(&mut self, invalidation: Invalidation)"
+
+        - name: process_invalidations
+          description: Process pending invalidations
+          signature: "fn process_invalidations(&mut self) -> InvalidationSet"
+
+        - name: mark_dirty
+          description: Mark element as needing restyle
+          signature: "fn mark_dirty(&mut self, element_id: ElementId, invalidation_type: InvalidationType)"
+
+        - name: is_dirty
+          description: Check if element needs restyle
+          signature: "fn is_dirty(&self, element_id: ElementId) -> bool"
+
+        - name: clear_dirty
+          description: Clear dirty flag after restyle
+          signature: "fn clear_dirty(&mut self, element_id: ElementId)"
+
+  functions:
+    - name: compute_affected_elements
+      description: Compute which elements are affected by invalidation
+      signature: "fn compute_affected_elements(invalidation: &Invalidation, dom: &DomTree) -> HashSet<ElementId>"
+
+    - name: should_invalidate_subtree
+      description: Determine if subtree invalidation is needed
+      signature: "fn should_invalidate_subtree(invalidation_type: &InvalidationType) -> bool"
+
+test_contracts:
+  - Full invalidation marks all elements dirty
+  - Subtree invalidation marks descendants
+  - Element invalidation marks single element
+  - Attribute change invalidation
+  - Class change invalidation
+  - State change invalidation (hover, focus)
+  - Multiple invalidations coalescing
+  - Dirty flag clearing after restyle
+  - Invalidation processing order
+
+performance_requirements:
+  - Invalidation recording: < 5μs
+  - Affected element computation: < 50μs
+  - Dirty check: < 1μs
+  - Processing 1000 invalidations: < 1ms

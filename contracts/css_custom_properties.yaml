@@ -1,0 +1,91 @@
+name: css_custom_properties
+version: 0.1.0
+description: CSS custom properties (variables) and calc() function
+phase: 4
+
+dependencies:
+  - css_types
+  - css_parser_core
+
+public_api:
+  structs:
+    - name: CustomProperty
+      description: CSS custom property definition
+      fields:
+        - name: String  # e.g., "--primary-color"
+        - value: String
+        - inherited: bool
+
+    - name: VariableReference
+      description: Reference to custom property with fallback
+      fields:
+        - name: String
+        - fallback: Option<String>
+
+    - name: CalcExpression
+      description: calc() function expression
+      variants:
+        - Value(CalcValue)
+        - Add(Box<CalcExpression>, Box<CalcExpression>)
+        - Subtract(Box<CalcExpression>, Box<CalcExpression>)
+        - Multiply(Box<CalcExpression>, f32)
+        - Divide(Box<CalcExpression>, f32)
+
+    - name: CalcValue
+      description: Value in calc() expression
+      variants:
+        - Number(f32)
+        - Length(Length)
+        - Percentage(f32)
+
+  traits:
+    - name: CustomPropertyResolver
+      description: Resolve custom properties and calc() expressions
+      methods:
+        - name: set_custom_property
+          description: Set custom property value
+          signature: "fn set_custom_property(&mut self, name: &str, value: &str)"
+
+        - name: get_custom_property
+          description: Get custom property value with inheritance
+          signature: "fn get_custom_property(&self, name: &str) -> Option<String>"
+
+        - name: resolve_var
+          description: Resolve var() reference
+          signature: "fn resolve_var(&self, var_ref: &VariableReference) -> String"
+
+        - name: evaluate_calc
+          description: Evaluate calc() expression to pixel value
+          signature: "fn evaluate_calc(&self, expr: &CalcExpression, context: &CalcContext) -> f32"
+
+  functions:
+    - name: parse_custom_property
+      description: Parse custom property definition
+      signature: "fn parse_custom_property(input: &str) -> Result<CustomProperty, ParseError>"
+
+    - name: parse_var_reference
+      description: Parse var() function
+      signature: "fn parse_var_reference(input: &str) -> Result<VariableReference, ParseError>"
+
+    - name: parse_calc_expression
+      description: Parse calc() function
+      signature: "fn parse_calc_expression(input: &str) -> Result<CalcExpression, ParseError>"
+
+test_contracts:
+  - Parse custom property definition (--name: value)
+  - Parse var() with property name
+  - Parse var() with fallback value
+  - Resolve custom property with inheritance
+  - Parse calc() with addition
+  - Parse calc() with subtraction
+  - Parse calc() with multiplication
+  - Parse calc() with division
+  - Evaluate calc() to pixel values
+  - Mixed unit calc() (e.g., 100% - 20px)
+  - Nested calc() expressions
+  - var() inside calc()
+
+performance_requirements:
+  - Property resolution: < 5μs
+  - calc() evaluation: < 20μs
+  - var() substitution: < 10μs

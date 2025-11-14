@@ -1,0 +1,24 @@
+name: css_stylist_cache
+version: 0.1.0
+type: feature
+language: rust
+estimated_lines: 6000
+description: Style sharing and caching - LRU cache, bloom filter optimization
+
+dependencies:
+  imports: [{"name": "css_types"}, {"name": "css_stylist_core"}]
+
+public_api:
+  - src/lib.rs
+
+private_implementation:
+  - src/_internal/
+
+test_directories:
+  - tests/unit
+  - tests/integration
+  - benches
+
+quality_standards:
+  min_test_coverage: 80
+  enforce_tdd: true
