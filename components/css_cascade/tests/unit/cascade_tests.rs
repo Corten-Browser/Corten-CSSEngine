@@ -1,6 +1,5 @@
 use css_cascade::{
-    ApplicableRule, CascadeResolver, Origin, PropertyId, PropertyValue,
-    Specificity, StyleRule,
+    ApplicableRule, CascadeResolver, Origin, PropertyId, PropertyValue, Specificity, StyleRule,
 };
 
 #[test]

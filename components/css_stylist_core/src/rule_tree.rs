@@ -114,11 +114,11 @@ pub struct RuleNode {
     /// Source of this rule
     pub source: RuleSource,
     /// Parent node (toward root)
-    parent: Option<RuleNodeId>,
+    pub parent: Option<RuleNodeId>,
     /// Child nodes
-    children: Vec<RuleNodeId>,
+    pub children: Vec<RuleNodeId>,
     /// Depth in the tree (root = 0)
-    depth: u32,
+    pub depth: u32,
 }
 
 impl RuleNode {

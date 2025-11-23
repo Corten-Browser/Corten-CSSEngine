@@ -971,7 +971,10 @@ mod tests {
             family: "Roboto".to_string(),
         });
 
-        if let CssResponse::FontProcessed { requires_restyle, .. } = response {
+        if let CssResponse::FontProcessed {
+            requires_restyle, ..
+        } = response
+        {
             assert!(!requires_restyle);
         } else {
             panic!("Expected FontProcessed response");
@@ -1064,16 +1067,18 @@ mod tests {
         let mut engine = BasicCssEngine::new();
 
         // Set inline style
-        engine.state_mut().set_inline_style(
-            1,
-            vec![PropertyDeclaration::new("display", "block")],
-        );
+        engine
+            .state_mut()
+            .set_inline_style(1, vec![PropertyDeclaration::new("display", "block")]);
 
         // Compute styles
         let response = engine.handle(CssMessage::ComputeStyles { dom_root: 1 });
 
         if let CssResponse::StylesComputed { tree } = response {
-            assert_eq!(tree.root.computed_style.display, crate::types::Display::Block);
+            assert_eq!(
+                tree.root.computed_style.display,
+                crate::types::Display::Block
+            );
         } else {
             panic!("Expected StylesComputed response");
         }

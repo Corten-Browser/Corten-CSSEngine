@@ -212,7 +212,6 @@ mod tests {
         assert_eq!(registry.len(), 2);
     }
 
-
     #[test]
     fn test_style_cache_insert_and_get() {
         let mut cache = StyleCache::new();
@@ -889,7 +888,8 @@ impl CssEngineState {
     /// Tick all animations
     pub fn tick_animations(&mut self, timestamp: f64) -> usize {
         // Update all animations and remove completed ones
-        self.active_animations.retain_mut(|anim| anim.tick(timestamp));
+        self.active_animations
+            .retain_mut(|anim| anim.tick(timestamp));
         self.active_animations.len()
     }
 

@@ -461,9 +461,7 @@ fn find_closing_paren(s: &str, start: usize) -> Option<usize> {
 /// Extract string value (remove quotes if present)
 fn extract_string_value(s: &str) -> String {
     let s = s.trim();
-    if (s.starts_with('"') && s.ends_with('"'))
-        || (s.starts_with('\'') && s.ends_with('\''))
-    {
+    if (s.starts_with('"') && s.ends_with('"')) || (s.starts_with('\'') && s.ends_with('\'')) {
         s[1..s.len() - 1].to_string()
     } else {
         s.to_string()
@@ -963,15 +961,13 @@ mod tests {
 
     #[test]
     fn test_parse_supports_and() {
-        let condition =
-            parse_supports_condition("(display: grid) and (gap: 10px)").unwrap();
+        let condition = parse_supports_condition("(display: grid) and (gap: 10px)").unwrap();
         assert!(matches!(condition, SupportsCondition::And(ref v) if v.len() == 2));
     }
 
     #[test]
     fn test_parse_supports_or() {
-        let condition =
-            parse_supports_condition("(display: flex) or (display: grid)").unwrap();
+        let condition = parse_supports_condition("(display: flex) or (display: grid)").unwrap();
         assert!(matches!(condition, SupportsCondition::Or(ref v) if v.len() == 2));
     }
 

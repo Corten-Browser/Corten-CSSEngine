@@ -5,6 +5,7 @@
 //! - Cascade resolution (origin, specificity, source order)
 //! - Property inheritance
 //! - !important declaration handling
+//! - CSS Cascade Layers (@layer)
 //!
 //! # Examples
 //!
@@ -17,7 +18,22 @@
 //! let spec = CascadeResolver::compute_specificity(&selector);
 //! assert_eq!(spec, Specificity::new(1, 0, 0));
 //! ```
+//!
+//! # Cascade Layers
+//!
+//! ```
+//! use css_cascade::layers::{LayerRegistry, CascadeLayer};
+//!
+//! let mut registry = LayerRegistry::new();
+//!
+//! // Declare layer order (first = lowest priority)
+//! registry.declare_layer_order(&["reset", "base", "components", "utilities"]);
+//!
+//! // Unlayered rules have highest priority
+//! let implicit = registry.implicit_layer_id();
+//! ```
 
+pub mod layers;
 mod resolver;
 mod types;
 
@@ -30,3 +46,6 @@ pub use types::{
     ApplicableRule, CascadeResult, ComputedValues, Origin, PropertyId, PropertyValue, Selector,
     StyleRule,
 };
+
+// Re-export key layer types at crate root for convenience
+pub use layers::{CascadeLayer, LayerId, LayerOrder, LayerRegistry, RevertLayer};

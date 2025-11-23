@@ -1,0 +1,11 @@
+[package]
+name = "css-paint"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+description = "CSS Paint API (Houdini) implementation for custom paint worklets"
+
+[dependencies]
+css-types = { path = "../css_types" }
+
+[dev-dependencies]

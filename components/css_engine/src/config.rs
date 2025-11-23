@@ -125,7 +125,7 @@ impl ResourceLimits {
     /// ```
     pub fn restrictive() -> Self {
         ResourceLimits {
-            max_stylesheet_size: 1024 * 1024,     // 1 MB
+            max_stylesheet_size: 1024 * 1024, // 1 MB
             max_rules_per_sheet: 10_000,
             max_selectors_per_rule: 100,
             max_nesting_depth: 20,
@@ -275,40 +275,19 @@ impl Default for ResourceLimits {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum LimitViolation {
     /// Stylesheet size exceeds maximum
-    StylesheetTooLarge {
-        size: usize,
-        max: usize,
-    },
+    StylesheetTooLarge { size: usize, max: usize },
     /// Too many rules in stylesheet
-    TooManyRules {
-        count: usize,
-        max: usize,
-    },
+    TooManyRules { count: usize, max: usize },
     /// Too many selectors in a rule
-    TooManySelectors {
-        count: usize,
-        max: usize,
-    },
+    TooManySelectors { count: usize, max: usize },
     /// Nesting depth exceeds maximum
-    NestingTooDeep {
-        depth: usize,
-        max: usize,
-    },
+    NestingTooDeep { depth: usize, max: usize },
     /// Too many declarations in a rule
-    TooManyDeclarations {
-        count: usize,
-        max: usize,
-    },
+    TooManyDeclarations { count: usize, max: usize },
     /// Selector string is too long
-    SelectorTooLong {
-        length: usize,
-        max: usize,
-    },
+    SelectorTooLong { length: usize, max: usize },
     /// URL is too long
-    UrlTooLong {
-        length: usize,
-        max: usize,
-    },
+    UrlTooLong { length: usize, max: usize },
 }
 
 impl std::fmt::Display for LimitViolation {
@@ -322,32 +301,16 @@ impl std::fmt::Display for LimitViolation {
                 )
             }
             LimitViolation::TooManyRules { count, max } => {
-                write!(
-                    f,
-                    "Rule count ({}) exceeds maximum ({})",
-                    count, max
-                )
+                write!(f, "Rule count ({}) exceeds maximum ({})", count, max)
             }
             LimitViolation::TooManySelectors { count, max } => {
-                write!(
-                    f,
-                    "Selector count ({}) exceeds maximum ({})",
-                    count, max
-                )
+                write!(f, "Selector count ({}) exceeds maximum ({})", count, max)
             }
             LimitViolation::NestingTooDeep { depth, max } => {
-                write!(
-                    f,
-                    "Nesting depth ({}) exceeds maximum ({})",
-                    depth, max
-                )
+                write!(f, "Nesting depth ({}) exceeds maximum ({})", depth, max)
             }
             LimitViolation::TooManyDeclarations { count, max } => {
-                write!(
-                    f,
-                    "Declaration count ({}) exceeds maximum ({})",
-                    count, max
-                )
+                write!(f, "Declaration count ({}) exceeds maximum ({})", count, max)
             }
             LimitViolation::SelectorTooLong { length, max } => {
                 write!(

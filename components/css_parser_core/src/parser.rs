@@ -1,6 +1,7 @@
 //! CSS Parser implementation
 
 use crate::at_rules::{parse_font_face, parse_namespace, parse_page, parse_supports};
+use crate::container::ContainerQueryParser;
 use crate::declaration::parse_declarations;
 use crate::selector::parse_selector_list;
 use crate::{CssRule, ParseError, StyleRule, Stylesheet};
@@ -53,7 +54,7 @@ impl CssParser {
         self.parse_style_rule(input)
     }
 
-    /// Parse an at-rule (@font-face, @supports, @page, @namespace, @media, @import)
+    /// Parse an at-rule (@font-face, @supports, @page, @namespace, @media, @import, @container)
     fn parse_at_rule(&self, input: &str) -> Result<CssRule, ParseError> {
         let input = input.trim();
 
@@ -70,6 +71,8 @@ impl CssParser {
             return self.parse_media_rule(input);
         } else if input.starts_with("@import") {
             return self.parse_import_rule(input);
+        } else if input.starts_with("@container") {
+            return self.parse_container_rule(input);
         }
 
         Err(ParseError::new(1, 1, "Unknown at-rule"))
@@ -221,6 +224,26 @@ impl CssParser {
         Ok(CssRule::Import(crate::ImportRule { url, media_queries }))
     }
 
+    /// Parse @container rule
+    fn parse_container_rule(&self, input: &str) -> Result<CssRule, ParseError> {
+        // @container [name] condition { ... }
+        let prefix = "@container";
+        let rest = input[prefix.len()..].trim();
+
+        let open_brace = rest
+            .find('{')
+            .ok_or_else(|| ParseError::new(1, 1, "Expected '{' in @container"))?;
+        let close_brace = rest
+            .rfind('}')
+            .ok_or_else(|| ParseError::new(1, 1, "Expected '}' in @container"))?;
+
+        let condition_text = rest[..open_brace].trim();
+        let body = &rest[open_brace + 1..close_brace];
+
+        let rule = ContainerQueryParser::parse(condition_text, body)?;
+        Ok(CssRule::Container(rule))
+    }
+
     /// Parse a style rule (selectors + declarations)
     fn parse_style_rule(&self, input: &str) -> Result<CssRule, ParseError> {
         let input = input.trim();
@@ -324,5 +347,92 @@ mod tests {
         let css = "div { margin: 10px; }";
         let rules = parser.extract_rules(css).unwrap();
         assert_eq!(rules.len(), 1);
+    }
+
+    // ========== @container Rule Tests ==========
+
+    #[test]
+    fn test_parse_container_rule_simple() {
+        let parser = CssParser::new();
+        let css = "@container (min-width: 400px) { .card { display: grid; } }";
+        let stylesheet = parser.parse(css).unwrap();
+
+        assert_eq!(stylesheet.rules.len(), 1);
+        assert!(matches!(stylesheet.rules[0], CssRule::Container(_)));
+
+        if let CssRule::Container(ref container) = stylesheet.rules[0] {
+            assert!(container.name.is_none());
+            assert_eq!(container.rules.len(), 1);
+        }
+    }
+
+    #[test]
+    fn test_parse_container_rule_named() {
+        let parser = CssParser::new();
+        let css = "@container sidebar (min-width: 400px) { .widget { padding: 1rem; } }";
+        let stylesheet = parser.parse(css).unwrap();
+
+        assert_eq!(stylesheet.rules.len(), 1);
+
+        if let CssRule::Container(ref container) = stylesheet.rules[0] {
+            assert_eq!(container.name, Some("sidebar".to_string()));
+        }
+    }
+
+    #[test]
+    fn test_parse_container_rule_with_comparison() {
+        let parser = CssParser::new();
+        let css = "@container (width > 500px) { .item { flex-direction: row; } }";
+        let stylesheet = parser.parse(css).unwrap();
+
+        assert_eq!(stylesheet.rules.len(), 1);
+        assert!(matches!(stylesheet.rules[0], CssRule::Container(_)));
+    }
+
+    #[test]
+    fn test_parse_container_rule_with_and() {
+        let parser = CssParser::new();
+        let css =
+            "@container (min-width: 400px) and (max-width: 800px) { .card { padding: 2rem; } }";
+        let stylesheet = parser.parse(css).unwrap();
+
+        assert_eq!(stylesheet.rules.len(), 1);
+        assert!(matches!(stylesheet.rules[0], CssRule::Container(_)));
+    }
+
+    #[test]
+    fn test_parse_container_rule_style_query() {
+        let parser = CssParser::new();
+        let css = "@container style(--theme: dark) { .text { color: white; } }";
+        let stylesheet = parser.parse(css).unwrap();
+
+        assert_eq!(stylesheet.rules.len(), 1);
+        assert!(matches!(stylesheet.rules[0], CssRule::Container(_)));
+    }
+
+    #[test]
+    fn test_parse_container_rule_with_not() {
+        let parser = CssParser::new();
+        let css = "@container not (min-width: 400px) { .small { font-size: 12px; } }";
+        let stylesheet = parser.parse(css).unwrap();
+
+        assert_eq!(stylesheet.rules.len(), 1);
+        assert!(matches!(stylesheet.rules[0], CssRule::Container(_)));
+    }
+
+    #[test]
+    fn test_parse_mixed_rules_with_container() {
+        let parser = CssParser::new();
+        let css = r#"
+            div { color: red; }
+            @container (min-width: 400px) { .card { display: grid; } }
+            .class { margin: 10px; }
+        "#;
+        let stylesheet = parser.parse(css).unwrap();
+
+        assert_eq!(stylesheet.rules.len(), 3);
+        assert!(matches!(stylesheet.rules[0], CssRule::Style(_)));
+        assert!(matches!(stylesheet.rules[1], CssRule::Container(_)));
+        assert!(matches!(stylesheet.rules[2], CssRule::Style(_)));
     }
 }

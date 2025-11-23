@@ -144,38 +144,19 @@ impl Default for ValidationConfig {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ValidationError {
     /// Stylesheet exceeds size limit
-    StylesheetTooLarge {
-        size: usize,
-        max: usize,
-    },
+    StylesheetTooLarge { size: usize, max: usize },
     /// Nesting depth exceeds limit
-    NestingTooDeep {
-        depth: usize,
-        max: usize,
-    },
+    NestingTooDeep { depth: usize, max: usize },
     /// URL exceeds length limit
-    UrlTooLong {
-        length: usize,
-        max: usize,
-    },
+    UrlTooLong { length: usize, max: usize },
     /// URL uses forbidden scheme
-    ForbiddenUrlScheme {
-        scheme: String,
-    },
+    ForbiddenUrlScheme { scheme: String },
     /// URL uses unknown scheme
-    UnknownUrlScheme {
-        scheme: String,
-    },
+    UnknownUrlScheme { scheme: String },
     /// Invalid URL format
-    InvalidUrlFormat {
-        url: String,
-        reason: String,
-    },
+    InvalidUrlFormat { url: String, reason: String },
     /// Selector exceeds length limit
-    SelectorTooLong {
-        length: usize,
-        max: usize,
-    },
+    SelectorTooLong { length: usize, max: usize },
     /// Data URLs not allowed
     DataUrlNotAllowed,
     /// Empty input
@@ -193,11 +174,7 @@ impl std::fmt::Display for ValidationError {
                 )
             }
             ValidationError::NestingTooDeep { depth, max } => {
-                write!(
-                    f,
-                    "Nesting depth ({}) exceeds maximum ({})",
-                    depth, max
-                )
+                write!(f, "Nesting depth ({}) exceeds maximum ({})", depth, max)
             }
             ValidationError::UrlTooLong { length, max } => {
                 write!(
@@ -692,10 +669,7 @@ mod tests {
         assert_eq!(validator.calculate_nesting_depth("body { }"), 1);
 
         // Single level
-        assert_eq!(
-            validator.calculate_nesting_depth("@media { body { } }"),
-            2
-        );
+        assert_eq!(validator.calculate_nesting_depth("@media { body { } }"), 2);
 
         // Multiple levels
         assert_eq!(
@@ -722,8 +696,12 @@ mod tests {
     fn test_url_validation_https() {
         let validator = InputValidator::default();
 
-        assert!(validator.validate_url("https://example.com/style.css").is_ok());
-        assert!(validator.validate_url("http://example.com/style.css").is_ok());
+        assert!(validator
+            .validate_url("https://example.com/style.css")
+            .is_ok());
+        assert!(validator
+            .validate_url("http://example.com/style.css")
+            .is_ok());
     }
 
     #[test]
@@ -732,7 +710,9 @@ mod tests {
         assert!(validator.validate_url("data:image/png;base64,ABC").is_ok());
 
         let strict_validator = InputValidator::strict();
-        assert!(strict_validator.validate_url("data:image/png;base64,ABC").is_err());
+        assert!(strict_validator
+            .validate_url("data:image/png;base64,ABC")
+            .is_err());
     }
 
     #[test]
@@ -749,7 +729,9 @@ mod tests {
         let validator = InputValidator::default();
 
         assert!(validator.validate_url("/styles/main.css").is_ok());
-        assert!(validator.validate_url("//cdn.example.com/style.css").is_ok());
+        assert!(validator
+            .validate_url("//cdn.example.com/style.css")
+            .is_ok());
         assert!(validator.validate_url("../styles.css").is_ok());
     }
 
@@ -758,7 +740,9 @@ mod tests {
         let validator = InputValidator::new(ValidationConfig::new().with_max_url_length(50));
 
         assert!(validator.validate_url("https://example.com/a").is_ok());
-        assert!(validator.validate_url(&format!("https://example.com/{}", "a".repeat(100))).is_err());
+        assert!(validator
+            .validate_url(&format!("https://example.com/{}", "a".repeat(100)))
+            .is_err());
     }
 
     #[test]
@@ -826,9 +810,7 @@ mod tests {
 
     #[test]
     fn test_selector_validation() {
-        let validator = InputValidator::new(
-            ValidationConfig::new().with_max_selector_length(50)
-        );
+        let validator = InputValidator::new(ValidationConfig::new().with_max_selector_length(50));
 
         assert!(validator.validate_selector("div.class#id").is_ok());
         assert!(validator.validate_selector(&"a".repeat(100)).is_err());
@@ -859,16 +841,16 @@ mod tests {
         };
         assert!(err.to_string().contains("javascript"));
 
-        let err = ValidationError::NestingTooDeep { depth: 150, max: 100 };
+        let err = ValidationError::NestingTooDeep {
+            depth: 150,
+            max: 100,
+        };
         assert!(err.to_string().contains("150"));
     }
 
     #[test]
     fn test_validation_error_to_parse_error() {
-        let validation_err = ValidationError::StylesheetTooLarge {
-            size: 100,
-            max: 50,
-        };
+        let validation_err = ValidationError::StylesheetTooLarge { size: 100, max: 50 };
         let parse_err: ParseError = validation_err.into();
         assert!(parse_err.message.contains("100"));
     }

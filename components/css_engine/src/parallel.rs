@@ -118,7 +118,11 @@ impl StyleRule {
     }
 
     /// Add a declaration
-    pub fn with_declaration(mut self, property: impl Into<String>, value: impl Into<String>) -> Self {
+    pub fn with_declaration(
+        mut self,
+        property: impl Into<String>,
+        value: impl Into<String>,
+    ) -> Self {
         self.declarations.push(Declaration {
             property: property.into(),
             value: value.into(),

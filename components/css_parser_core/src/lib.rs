@@ -10,6 +10,7 @@
 //! - `@supports` - Feature query parsing and evaluation
 //! - `@page` - Print styles
 //! - `@namespace` - XML namespace declarations
+//! - `@container` - Container queries for responsive container-based layouts
 //!
 //! ## Security
 //!
@@ -30,16 +31,28 @@ pub use css_types::{Color, Length, Specificity};
 use std::fmt;
 
 mod at_rules;
-mod declaration;
+pub mod container;
+pub mod declaration;
+pub mod nesting;
 mod parser;
 mod selector;
+pub mod source_map;
 pub mod validation;
 
 pub use at_rules::{
     FontDisplay, FontFaceRule, FontSource, FontStyle, FontWeight, NamespaceRule, PageRule,
     PageSelector, SupportsCondition, SupportsRule, UnicodeRange,
 };
+pub use container::{ContainerQueryParser, ContainerRule};
+pub use nesting::{
+    flatten_nested_rules, resolve_selector, to_style_rules, ComplexNestedSelector, FlattenedRule,
+    NestedAtRule, NestedRule, NestedSelector, NestingParser,
+};
 pub use parser::CssParser;
+pub use source_map::{
+    extract_source_map_url, generate_source_map, parse_inline_source_map, parse_source_map,
+    Mapping, SourceLocation, SourceMap, SourceMapError,
+};
 pub use validation::{InputValidator, ValidationConfig, ValidationError};
 
 /// Stylesheet origin (author, user, user-agent)
@@ -125,6 +138,8 @@ pub enum CssRule {
     Page(PageRule),
     /// @namespace rule for XML namespace declarations
     Namespace(NamespaceRule),
+    /// @container rule for container queries
+    Container(ContainerRule),
 }
 
 /// Style rule with selectors and declarations

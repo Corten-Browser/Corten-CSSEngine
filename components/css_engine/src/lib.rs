@@ -25,6 +25,7 @@
 // Public modules
 pub mod config;
 pub mod error;
+pub mod hot_reload;
 pub mod logging;
 pub mod message;
 pub mod metrics;
@@ -70,6 +71,12 @@ pub use parallel::{
 
 // Re-export style thread types
 pub use style_thread::{StyleFuture, StyleTask, StyleThread, StyleThreadPool};
+
+// Re-export hot reload types
+pub use hot_reload::{
+    DeclarationModification, HotReloadConfig, HotReloadManager, ParsedRuleSnapshot,
+    RuleModification, StylesheetDiff, StylesheetVersion,
+};
 
 #[cfg(test)]
 mod tests {

@@ -544,12 +544,49 @@ impl UserAgentStylesheet {
     /// Build the set of block-level elements
     fn build_block_elements() -> HashSet<String> {
         [
-            "html", "body", "div", "section", "article", "aside", "nav",
-            "header", "footer", "main", "h1", "h2", "h3", "h4", "h5", "h6",
-            "p", "blockquote", "pre", "address", "ul", "ol", "li", "dl",
-            "dt", "dd", "figure", "figcaption", "hgroup", "form", "fieldset",
-            "legend", "table", "caption", "thead", "tbody", "tfoot", "tr",
-            "hr", "noscript", "details", "summary", "dialog",
+            "html",
+            "body",
+            "div",
+            "section",
+            "article",
+            "aside",
+            "nav",
+            "header",
+            "footer",
+            "main",
+            "h1",
+            "h2",
+            "h3",
+            "h4",
+            "h5",
+            "h6",
+            "p",
+            "blockquote",
+            "pre",
+            "address",
+            "ul",
+            "ol",
+            "li",
+            "dl",
+            "dt",
+            "dd",
+            "figure",
+            "figcaption",
+            "hgroup",
+            "form",
+            "fieldset",
+            "legend",
+            "table",
+            "caption",
+            "thead",
+            "tbody",
+            "tfoot",
+            "tr",
+            "hr",
+            "noscript",
+            "details",
+            "summary",
+            "dialog",
         ]
         .iter()
         .map(|s| s.to_string())
@@ -559,12 +596,11 @@ impl UserAgentStylesheet {
     /// Build the set of inline elements
     fn build_inline_elements() -> HashSet<String> {
         [
-            "span", "a", "em", "strong", "i", "b", "u", "s", "small", "big",
-            "sub", "sup", "mark", "abbr", "acronym", "q", "cite", "code",
-            "kbd", "samp", "var", "dfn", "del", "ins", "img", "br", "wbr",
-            "svg", "video", "audio", "canvas", "iframe", "object", "embed",
-            "input", "button", "select", "textarea", "label", "output",
-            "progress", "meter", "time", "data", "ruby", "rt", "rp",
+            "span", "a", "em", "strong", "i", "b", "u", "s", "small", "big", "sub", "sup", "mark",
+            "abbr", "acronym", "q", "cite", "code", "kbd", "samp", "var", "dfn", "del", "ins",
+            "img", "br", "wbr", "svg", "video", "audio", "canvas", "iframe", "object", "embed",
+            "input", "button", "select", "textarea", "label", "output", "progress", "meter",
+            "time", "data", "ruby", "rt", "rp",
         ]
         .iter()
         .map(|s| s.to_string())

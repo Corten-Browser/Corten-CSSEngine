@@ -123,13 +123,22 @@ macro_rules! css_span {
 #[derive(Debug, Clone)]
 pub enum LogEvent {
     /// Stylesheet parsing started
-    ParseStart { source_url: Option<String>, size: usize },
+    ParseStart {
+        source_url: Option<String>,
+        size: usize,
+    },
     /// Stylesheet parsing completed
-    ParseComplete { rules_count: usize, duration_ms: f64 },
+    ParseComplete {
+        rules_count: usize,
+        duration_ms: f64,
+    },
     /// Style computation started
     ComputeStart { element_count: usize },
     /// Style computation completed
-    ComputeComplete { computed_count: usize, duration_ms: f64 },
+    ComputeComplete {
+        computed_count: usize,
+        duration_ms: f64,
+    },
     /// Cache hit
     CacheHit { element_id: u32 },
     /// Cache miss
@@ -156,7 +165,10 @@ impl LogEvent {
                     "Starting stylesheet parse"
                 );
             }
-            LogEvent::ParseComplete { rules_count, duration_ms } => {
+            LogEvent::ParseComplete {
+                rules_count,
+                duration_ms,
+            } => {
                 tracing::info!(
                     target: "css_parser",
                     rules_count = rules_count,
@@ -171,7 +183,10 @@ impl LogEvent {
                     "Starting style computation"
                 );
             }
-            LogEvent::ComputeComplete { computed_count, duration_ms } => {
+            LogEvent::ComputeComplete {
+                computed_count,
+                duration_ms,
+            } => {
                 tracing::debug!(
                     target: "css_engine",
                     computed_count = computed_count,
@@ -296,7 +311,10 @@ mod tests {
         let cloned = event.clone();
 
         match cloned {
-            LogEvent::ParseComplete { rules_count, duration_ms } => {
+            LogEvent::ParseComplete {
+                rules_count,
+                duration_ms,
+            } => {
                 assert_eq!(rules_count, 50);
                 assert!((duration_ms - 1.5).abs() < f64::EPSILON);
             }
