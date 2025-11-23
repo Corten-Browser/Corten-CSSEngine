@@ -414,21 +414,18 @@ impl BasicCssEngine {
     /// Apply a declaration to a computed style
     fn apply_declaration(&self, style: &mut ComputedStyle, decl: &PropertyDeclaration) {
         // Simplified property application
-        match decl.property.as_str() {
-            "display" => {
-                style.display = match decl.value.as_str() {
-                    "block" => crate::types::Display::Block,
-                    "inline" => crate::types::Display::Inline,
-                    "inline-block" => crate::types::Display::InlineBlock,
-                    "flex" => crate::types::Display::Flex,
-                    "grid" => crate::types::Display::Grid,
-                    "none" => crate::types::Display::None,
-                    _ => crate::types::Display::default(),
-                };
-            }
-            // Add more properties as needed
-            _ => {}
+        if decl.property.as_str() == "display" {
+            style.display = match decl.value.as_str() {
+                "block" => crate::types::Display::Block,
+                "inline" => crate::types::Display::Inline,
+                "inline-block" => crate::types::Display::InlineBlock,
+                "flex" => crate::types::Display::Flex,
+                "grid" => crate::types::Display::Grid,
+                "none" => crate::types::Display::None,
+                _ => crate::types::Display::default(),
+            };
         }
+        // Add more properties as needed
     }
 
     /// Handle style invalidation

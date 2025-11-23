@@ -51,6 +51,11 @@ impl StylesheetRegistry {
     pub fn len(&self) -> usize {
         self.stylesheets.len()
     }
+
+    /// Check if the registry is empty
+    pub fn is_empty(&self) -> bool {
+        self.stylesheets.is_empty()
+    }
 }
 
 impl Default for StylesheetRegistry {
@@ -140,6 +145,11 @@ impl StyleCache {
     /// Get the number of cached styles
     pub fn len(&self) -> usize {
         self.cache.len()
+    }
+
+    /// Check if the cache is empty
+    pub fn is_empty(&self) -> bool {
+        self.cache.is_empty()
     }
 }
 
