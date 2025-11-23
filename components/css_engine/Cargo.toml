@@ -31,4 +31,8 @@ thiserror = "1.0"
 # Data structures
 fxhash = "0.2"
 
+# Logging and tracing
+tracing = "0.1"
+
 [dev-dependencies]
+tracing-subscriber = "0.3"

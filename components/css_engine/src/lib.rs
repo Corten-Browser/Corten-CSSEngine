@@ -23,19 +23,24 @@
 //! ```
 
 // Public modules
+pub mod config;
 pub mod error;
+pub mod logging;
 pub mod types;
+pub mod ua_stylesheet;
 
 // Internal modules
 mod engine;
 mod state;
 
 // Re-export main types
+pub use config::{LimitViolation, ResourceLimits};
 pub use engine::CssEngine;
 pub use error::{CssError, ElementId, StyleSheetId};
 pub use types::{
     Color, ComputedStyle, Display, DomNode, Length, StyleInvalidation, StyleNode, StyleTree,
 };
+pub use ua_stylesheet::{MinimalUserAgentStylesheet, UserAgentStylesheet};
 
 // Re-export state types for advanced usage
 pub use state::EngineConfig;

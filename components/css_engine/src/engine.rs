@@ -3,6 +3,7 @@
 use crate::error::{CssError, ElementId, StyleSheetId};
 use crate::state::{EngineConfig, StyleCache, Stylesheet, StylesheetRegistry};
 use crate::types::{ComputedStyle, DomNode, StyleInvalidation, StyleNode, StyleTree};
+use tracing::{debug, info, instrument, trace, warn};
 
 /// Main CSS Engine
 #[derive(Debug)]
@@ -50,13 +51,22 @@ impl CssEngine {
     ///
     /// # Errors
     /// Returns `CssError::ParseError` if parsing fails
+    #[instrument(
+        target = "css_parser",
+        level = "info",
+        skip(self, css),
+        fields(size = css.len(), source = ?source_url)
+    )]
     pub fn parse_stylesheet(
         &mut self,
         css: &str,
         source_url: Option<&str>,
     ) -> Result<StyleSheetId, CssError> {
+        trace!(target: "css_parser", "Starting stylesheet parse");
+
         // Basic validation
         if css.is_empty() {
+            warn!(target: "css_parser", "Empty stylesheet received");
             return Err(CssError::ParseError {
                 line: 0,
                 column: 0,
@@ -64,11 +74,14 @@ impl CssEngine {
             });
         }
 
+        debug!(target: "css_parser", size = css.len(), "Parsing stylesheet");
+
         // Create stylesheet (actual parsing will be implemented later)
         let stylesheet = Stylesheet::new(css.to_string(), source_url.map(|s| s.to_string()));
 
         // Register and return ID
         let id = self.stylesheets.register(stylesheet);
+        info!(target: "css_parser", id = ?id, "Stylesheet registered");
         Ok(id)
     }
 
@@ -108,20 +121,42 @@ impl CssEngine {
     ///
     /// # Errors
     /// Returns `CssError::ComputationError` if computation fails
+    #[instrument(
+        target = "css_engine",
+        level = "debug",
+        skip(self, dom_root),
+        fields(root_tag = %dom_root.tag_name)
+    )]
     pub fn compute_styles(&mut self, dom_root: &DomNode) -> Result<StyleTree, CssError> {
+        debug!(target: "css_engine", "Starting style computation");
+
         // Recursively compute styles for the tree
         let root_node = self.compute_node_style(dom_root)?;
+
+        info!(
+            target: "css_engine",
+            cache_size = self.cache.len(),
+            "Style computation complete"
+        );
 
         Ok(StyleTree { root: root_node })
     }
 
     /// Compute style for a single node and its children
     fn compute_node_style(&mut self, node: &DomNode) -> Result<StyleNode, CssError> {
+        trace!(
+            target: "css_engine",
+            element_id = ?node.id,
+            tag = %node.tag_name,
+            "Computing node style"
+        );
+
         // Get or compute style for this element
         let computed_style = self.compute_element_style(node)?;
 
         // Cache the computed style
         self.cache.insert(node.id, computed_style.clone());
+        trace!(target: "css_cache", element_id = ?node.id, "Cached computed style");
 
         // Recursively compute styles for children
         let mut children = Vec::new();
@@ -141,24 +176,40 @@ impl CssEngine {
     fn compute_element_style(&self, node: &DomNode) -> Result<ComputedStyle, CssError> {
         // Check cache first
         if let Some(cached) = self.cache.get(node.id) {
+            trace!(target: "css_cache", element_id = ?node.id, "Cache hit");
             return Ok(cached.clone());
         }
+        trace!(target: "css_cache", element_id = ?node.id, "Cache miss");
 
         // Start with default style
         let mut style = ComputedStyle::default();
 
         // TODO: Apply cascade algorithm
         // 1. Apply user-agent stylesheet
+        trace!(target: "css_cascade", element_id = ?node.id, "Applying user-agent styles");
         // 2. Apply author stylesheets
+        trace!(target: "css_cascade", element_id = ?node.id, "Applying author styles");
         // 3. Apply inline styles
         // 4. Apply inheritance
+        trace!(target: "css_cascade", element_id = ?node.id, "Applying inheritance");
 
         // For now, just check for inline styles
         if let Some(inline_style) = self.inline_styles.get(&node.id) {
+            trace!(
+                target: "css_cascade",
+                element_id = ?node.id,
+                "Applying inline style"
+            );
             // Parse and apply inline style
             // This is a simplified version - actual implementation will use parser
             self.apply_inline_style(&mut style, inline_style)?;
         }
+
+        debug!(
+            target: "css_cascade",
+            element_id = ?node.id,
+            "Cascade resolution complete"
+        );
 
         Ok(style)
     }
@@ -198,19 +249,39 @@ impl CssEngine {
     ///
     /// # Errors
     /// Returns error if invalidation fails
+    #[instrument(target = "css_cache", level = "debug", skip(self))]
     pub fn invalidate_styles(&mut self, invalidation: StyleInvalidation) -> Result<(), CssError> {
-        match invalidation {
-            StyleInvalidation::AttributeChange { element_id, .. } => {
-                self.cache.invalidate(element_id);
+        match &invalidation {
+            StyleInvalidation::AttributeChange { element_id, attr } => {
+                debug!(
+                    target: "css_cache",
+                    ?element_id,
+                    attribute = %attr,
+                    "Invalidating due to attribute change"
+                );
+                self.cache.invalidate(*element_id);
             }
-            StyleInvalidation::ClassChange { element_id, .. } => {
-                self.cache.invalidate(element_id);
+            StyleInvalidation::ClassChange {
+                element_id,
+                added,
+                removed,
+            } => {
+                debug!(
+                    target: "css_cache",
+                    ?element_id,
+                    added_count = added.len(),
+                    removed_count = removed.len(),
+                    "Invalidating due to class change"
+                );
+                self.cache.invalidate(*element_id);
             }
             StyleInvalidation::ElementInserted { element_id, .. } => {
-                self.cache.invalidate(element_id);
+                debug!(target: "css_cache", ?element_id, "Invalidating due to element insertion");
+                self.cache.invalidate(*element_id);
             }
             StyleInvalidation::ElementRemoved { element_id } => {
-                self.cache.invalidate(element_id);
+                debug!(target: "css_cache", ?element_id, "Invalidating due to element removal");
+                self.cache.invalidate(*element_id);
             }
         }
         Ok(())
