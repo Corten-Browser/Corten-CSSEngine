@@ -5,8 +5,13 @@
 //! - Property inheritance
 //! - Unit resolution
 //! - Rule tree for style sharing
+//! - Bloom filter for fast selector rejection
+//! - String interning for memory optimization
 
+pub mod bloom_filter;
 pub mod compute;
+pub mod interning;
+pub mod rule_tree;
 pub mod types;
 
 pub use types::{ComputedValues, Display, Position, RuleNode, StyleContext};
