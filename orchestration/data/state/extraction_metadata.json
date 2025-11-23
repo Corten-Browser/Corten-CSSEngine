@@ -1,0 +1,18 @@
+{
+  "last_extraction": "2025-11-23T23:20:52.927675",
+  "extraction_method": "pending-llm",
+  "spec_files": [
+    {
+      "path": "specifications/css-engine-specification.md",
+      "features_extracted": 20,
+      "extraction_method": "automated",
+      "last_processed": "2025-11-23T23:20:52.927732"
+    }
+  ],
+  "total_features": 0,
+  "automated_features": 0,
+  "llm_features": 0,
+  "llm_extraction_complete": false,
+  "llm_extraction_timestamp": null,
+  "automated_extraction_success": false
+}
