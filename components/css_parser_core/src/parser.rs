@@ -1,5 +1,6 @@
 //! CSS Parser implementation
 
+use crate::at_rules::{parse_font_face, parse_namespace, parse_page, parse_supports};
 use crate::declaration::parse_declarations;
 use crate::selector::parse_selector_list;
 use crate::{CssRule, ParseError, StyleRule, Stylesheet};
@@ -39,8 +40,189 @@ impl CssParser {
         Ok(stylesheet)
     }
 
-    /// Parse a single CSS rule
+    /// Parse a single CSS rule (style rule or at-rule)
     pub fn parse_rule(&self, input: &str) -> Result<CssRule, ParseError> {
+        let input = input.trim();
+
+        // Check for at-rules
+        if input.starts_with('@') {
+            return self.parse_at_rule(input);
+        }
+
+        // Parse as style rule
+        self.parse_style_rule(input)
+    }
+
+    /// Parse an at-rule (@font-face, @supports, @page, @namespace, @media, @import)
+    fn parse_at_rule(&self, input: &str) -> Result<CssRule, ParseError> {
+        let input = input.trim();
+
+        // Determine at-rule type
+        if input.starts_with("@font-face") {
+            return self.parse_font_face_rule(input);
+        } else if input.starts_with("@supports") {
+            return self.parse_supports_rule(input);
+        } else if input.starts_with("@page") {
+            return self.parse_page_rule(input);
+        } else if input.starts_with("@namespace") {
+            return self.parse_namespace_rule(input);
+        } else if input.starts_with("@media") {
+            return self.parse_media_rule(input);
+        } else if input.starts_with("@import") {
+            return self.parse_import_rule(input);
+        }
+
+        Err(ParseError::new(1, 1, "Unknown at-rule"))
+    }
+
+    /// Parse @font-face rule
+    fn parse_font_face_rule(&self, input: &str) -> Result<CssRule, ParseError> {
+        // @font-face { ... }
+        let open_brace = input
+            .find('{')
+            .ok_or_else(|| ParseError::new(1, 1, "Expected '{' in @font-face"))?;
+        let close_brace = input
+            .rfind('}')
+            .ok_or_else(|| ParseError::new(1, 1, "Expected '}' in @font-face"))?;
+
+        let body = &input[open_brace + 1..close_brace];
+        let rule = parse_font_face(body)?;
+        Ok(CssRule::FontFace(rule))
+    }
+
+    /// Parse @supports rule
+    fn parse_supports_rule(&self, input: &str) -> Result<CssRule, ParseError> {
+        // @supports condition { ... }
+        let prefix = "@supports";
+        let rest = input[prefix.len()..].trim();
+
+        let open_brace = rest
+            .find('{')
+            .ok_or_else(|| ParseError::new(1, 1, "Expected '{' in @supports"))?;
+        let close_brace = rest
+            .rfind('}')
+            .ok_or_else(|| ParseError::new(1, 1, "Expected '}' in @supports"))?;
+
+        let condition_text = rest[..open_brace].trim();
+        let body = &rest[open_brace + 1..close_brace];
+
+        let rule = parse_supports(condition_text, body)?;
+        Ok(CssRule::Supports(rule))
+    }
+
+    /// Parse @page rule
+    fn parse_page_rule(&self, input: &str) -> Result<CssRule, ParseError> {
+        // @page [selector] { ... }
+        let prefix = "@page";
+        let rest = input[prefix.len()..].trim();
+
+        let open_brace = rest
+            .find('{')
+            .ok_or_else(|| ParseError::new(1, 1, "Expected '{' in @page"))?;
+        let close_brace = rest
+            .rfind('}')
+            .ok_or_else(|| ParseError::new(1, 1, "Expected '}' in @page"))?;
+
+        let selector_text = rest[..open_brace].trim();
+        let body = &rest[open_brace + 1..close_brace];
+
+        let rule = parse_page(selector_text, body)?;
+        Ok(CssRule::Page(rule))
+    }
+
+    /// Parse @namespace rule
+    fn parse_namespace_rule(&self, input: &str) -> Result<CssRule, ParseError> {
+        // @namespace [prefix] "url";
+        let prefix = "@namespace";
+        let rest = input[prefix.len()..].trim();
+
+        // For @namespace, we don't have braces - just a semicolon-terminated statement
+        // But our rule extraction includes the whole block, so handle both cases
+        let content = if let Some(open_brace) = rest.find('{') {
+            // Shouldn't happen for @namespace, but handle it
+            &rest[..open_brace]
+        } else {
+            rest.trim_end_matches(';').trim_end_matches('}')
+        };
+
+        let rule = parse_namespace(content)?;
+        Ok(CssRule::Namespace(rule))
+    }
+
+    /// Parse @media rule
+    fn parse_media_rule(&self, input: &str) -> Result<CssRule, ParseError> {
+        // @media query { ... }
+        let prefix = "@media";
+        let rest = input[prefix.len()..].trim();
+
+        let open_brace = rest
+            .find('{')
+            .ok_or_else(|| ParseError::new(1, 1, "Expected '{' in @media"))?;
+        let close_brace = rest
+            .rfind('}')
+            .ok_or_else(|| ParseError::new(1, 1, "Expected '}' in @media"))?;
+
+        let query_text = rest[..open_brace].trim();
+        let body = &rest[open_brace + 1..close_brace];
+
+        // Parse media queries (simple split by comma)
+        let media_queries: Vec<String> = query_text
+            .split(',')
+            .map(|s| s.trim().to_string())
+            .collect();
+
+        // Parse nested rules
+        let mut rules = Vec::new();
+        let nested_rules = self.extract_rules(body)?;
+        for rule_text in nested_rules {
+            if !rule_text.trim().is_empty() {
+                if let Ok(rule) = self.parse_rule(rule_text) {
+                    rules.push(rule);
+                }
+            }
+        }
+
+        Ok(CssRule::Media(crate::MediaRule {
+            media_queries,
+            rules,
+        }))
+    }
+
+    /// Parse @import rule
+    fn parse_import_rule(&self, input: &str) -> Result<CssRule, ParseError> {
+        // @import url("...") [media];
+        let prefix = "@import";
+        let rest = input[prefix.len()..].trim();
+
+        // Remove trailing semicolon and closing brace if present
+        let rest = rest.trim_end_matches(';').trim_end_matches('}').trim();
+
+        // Extract URL
+        let url = if rest.starts_with("url(") {
+            let end = rest
+                .find(')')
+                .ok_or_else(|| ParseError::new(1, 1, "Missing ')' in @import url()"))?;
+            let url_content = &rest[4..end];
+            extract_string_value(url_content)
+        } else if rest.starts_with('"') || rest.starts_with('\'') {
+            // String URL
+            let quote = rest.chars().next().unwrap();
+            let end = rest[1..]
+                .find(quote)
+                .ok_or_else(|| ParseError::new(1, 1, "Unterminated string in @import"))?;
+            rest[1..end + 1].to_string()
+        } else {
+            return Err(ParseError::new(1, 1, "Invalid @import URL"));
+        };
+
+        // Extract media queries (optional, after the URL)
+        let media_queries = Vec::new(); // Simplified - not parsing media queries here
+
+        Ok(CssRule::Import(crate::ImportRule { url, media_queries }))
+    }
+
+    /// Parse a style rule (selectors + declarations)
+    fn parse_style_rule(&self, input: &str) -> Result<CssRule, ParseError> {
         let input = input.trim();
 
         // Find the selector/declaration split at '{'
@@ -103,6 +285,16 @@ impl CssParser {
 impl Default for CssParser {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+/// Extract string value (remove quotes if present)
+fn extract_string_value(s: &str) -> String {
+    let s = s.trim();
+    if (s.starts_with('"') && s.ends_with('"')) || (s.starts_with('\'') && s.ends_with('\'')) {
+        s[1..s.len() - 1].to_string()
+    } else {
+        s.to_string()
     }
 }
 

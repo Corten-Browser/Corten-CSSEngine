@@ -2,15 +2,45 @@
 //!
 //! This module provides a basic CSS parser for CSS2.1 stylesheets,
 //! supporting simple selectors (element, class, id) and basic properties.
+//!
+//! ## At-Rules Support
+//!
+//! This parser supports the following CSS at-rules:
+//! - `@font-face` - Custom font declarations
+//! - `@supports` - Feature query parsing and evaluation
+//! - `@page` - Print styles
+//! - `@namespace` - XML namespace declarations
+//!
+//! ## Security
+//!
+//! This module includes input validation to prevent denial-of-service attacks.
+//! Use `InputValidator` to validate untrusted CSS input before parsing.
+//!
+//! ```
+//! use css_parser_core::{InputValidator, ValidationConfig};
+//!
+//! let validator = InputValidator::default();
+//! let css = "body { color: red; }";
+//!
+//! // Validate before parsing
+//! validator.validate(css).expect("CSS validation failed");
+//! ```
 
 pub use css_types::{Color, Length, Specificity};
 use std::fmt;
 
+mod at_rules;
 mod declaration;
 mod parser;
 mod selector;
+pub mod validation;
 
+pub use at_rules::{
+    FontDisplay, FontFaceRule, FontSource, FontStyle, FontWeight, NamespaceRule, PageRule,
+    PageSelector, SupportsCondition, SupportsRule, UnicodeRange,
+};
 pub use parser::CssParser;
+pub use validation::{InputValidator, ValidationConfig, ValidationError};
 
 /// Stylesheet origin (author, user, user-agent)
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -87,6 +117,14 @@ pub enum CssRule {
     Media(MediaRule),
     /// Import rule
     Import(ImportRule),
+    /// @font-face rule for custom font declarations
+    FontFace(FontFaceRule),
+    /// @supports rule for feature queries
+    Supports(SupportsRule),
+    /// @page rule for print styles
+    Page(PageRule),
+    /// @namespace rule for XML namespace declarations
+    Namespace(NamespaceRule),
 }
 
 /// Style rule with selectors and declarations
