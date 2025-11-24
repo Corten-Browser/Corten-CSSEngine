@@ -63,7 +63,7 @@ fn test_calc_with_mixed_units() {
     let expr_str = "calc(100% - 20px)";
     let expr = parse_calc_expression(expr_str).unwrap();
 
-    let context = CalcContext::new(200.0, 16.0);
+    let context = CalcContext::new(200.0, 200.0, 16.0);
     let result = expr.evaluate(&context);
 
     // 100% of 200px = 200px, minus 20px = 180px
@@ -76,7 +76,7 @@ fn test_calc_complex_expression() {
     let expr_str = "calc((100% - 40px) / 2)";
     let expr = parse_calc_expression(expr_str).unwrap();
 
-    let context = CalcContext::new(200.0, 16.0);
+    let context = CalcContext::new(200.0, 200.0, 16.0);
     let result = expr.evaluate(&context);
 
     // (100% of 200px - 40px) / 2 = (200 - 40) / 2 = 80px
@@ -96,7 +96,7 @@ fn test_calc_with_em_units() {
     ))));
     let expr = CalcExpression::Add(left, right);
 
-    let context = CalcContext::new(100.0, 16.0);
+    let context = CalcContext::new(100.0, 100.0, 16.0);
     let result = expr.evaluate(&context);
 
     // 2em * 16px/em + 10px = 32px + 10px = 42px
@@ -172,7 +172,7 @@ fn test_calc_division_by_zero() {
     ))));
     let expr = CalcExpression::Divide(value, 0.0);
 
-    let context = CalcContext::new(100.0, 16.0);
+    let context = CalcContext::new(100.0, 100.0, 16.0);
     let result = expr.evaluate(&context);
     assert_eq!(result, 0.0);
 }
@@ -184,7 +184,7 @@ fn test_parse_and_evaluate_percentage_calc() {
     let right = Box::new(CalcExpression::Value(CalcValue::Percentage(25.0)));
     let expr = CalcExpression::Add(left, right);
 
-    let context = CalcContext::new(100.0, 16.0);
+    let context = CalcContext::new(100.0, 100.0, 16.0);
     let result = expr.evaluate(&context);
 
     // 50% of 100px + 25% of 100px = 50px + 25px = 75px
@@ -200,7 +200,7 @@ fn test_real_world_layout_calc() {
     let expr = parse_calc_expression(expr_str).unwrap();
 
     // Viewport width is 1024px
-    let context = CalcContext::new(1024.0, 16.0);
+    let context = CalcContext::new(1024.0, 768.0, 16.0);
     let result = expr.evaluate(&context);
 
     // 1024px - 40px = 984px

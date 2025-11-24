@@ -149,6 +149,17 @@ impl CalcValue {
                 LengthUnit::Percent => length.value() * context.viewport_width / 100.0,
                 LengthUnit::Vw => length.value() * context.viewport_width / 100.0,
                 LengthUnit::Vh => length.value() * context.viewport_width / 100.0, // Simplified
+                // Container query units - use viewport as fallback container size
+                LengthUnit::Cqw | LengthUnit::Cqi => length.value() * context.viewport_width / 100.0,
+                LengthUnit::Cqh | LengthUnit::Cqb => length.value() * context.viewport_height / 100.0,
+                LengthUnit::Cqmin => {
+                    let min_size = context.viewport_width.min(context.viewport_height);
+                    length.value() * min_size / 100.0
+                }
+                LengthUnit::Cqmax => {
+                    let max_size = context.viewport_width.max(context.viewport_height);
+                    length.value() * max_size / 100.0
+                }
             },
             CalcValue::Percentage(pct) => pct * context.viewport_width / 100.0,
         }
@@ -183,7 +194,7 @@ impl CalcExpression {
     ///     Box::new(CalcExpression::Value(CalcValue::Length(Length::new(20.0, LengthUnit::Px)))),
     /// );
     ///
-    /// let context = CalcContext::new(100.0, 16.0);
+    /// let context = CalcContext::new(100.0, 100.0, 16.0);
     /// let result = expr.evaluate(&context);
     /// assert!((result - 30.0).abs() < 0.01);
     /// ```
@@ -211,6 +222,8 @@ impl CalcExpression {
 pub struct CalcContext {
     /// Viewport width in pixels
     pub viewport_width: f32,
+    /// Viewport height in pixels
+    pub viewport_height: f32,
     /// Font size in pixels
     pub font_size: f32,
 }
@@ -222,13 +235,15 @@ impl CalcContext {
     /// ```
     /// use css_custom_properties::CalcContext;
     ///
-    /// let context = CalcContext::new(1920.0, 16.0);
+    /// let context = CalcContext::new(1920.0, 1080.0, 16.0);
     /// assert_eq!(context.viewport_width, 1920.0);
+    /// assert_eq!(context.viewport_height, 1080.0);
     /// assert_eq!(context.font_size, 16.0);
     /// ```
-    pub fn new(viewport_width: f32, font_size: f32) -> Self {
+    pub fn new(viewport_width: f32, viewport_height: f32, font_size: f32) -> Self {
         Self {
             viewport_width,
+            viewport_height,
             font_size,
         }
     }
@@ -495,7 +510,7 @@ mod tests {
 
     #[test]
     fn test_calc_value_to_pixels() {
-        let context = CalcContext::new(100.0, 16.0);
+        let context = CalcContext::new(100.0, 100.0, 16.0);
 
         let val = CalcValue::Number(10.0);
         assert_eq!(val.to_pixels(&context), 10.0);

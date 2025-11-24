@@ -82,7 +82,7 @@ fn test_evaluate_calc_via_resolver() {
     )));
     let expr = CalcExpression::Add(left, right);
 
-    let context = CalcContext::new(100.0, 16.0);
+    let context = CalcContext::new(100.0, 100.0, 16.0);
     let result = resolver.evaluate_calc(&expr, &context);
     assert!((result - 30.0).abs() < 0.01);
 }
