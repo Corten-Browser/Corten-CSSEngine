@@ -1,0 +1,11 @@
+[package]
+name = "testing-mocks"
+version = "0.1.0"
+edition = "2021"
+description = "Mock implementations for testing CSS engine components"
+
+[dependencies]
+# No runtime dependencies - pure mock implementations
+
+[dev-dependencies]
+# Testing framework (uses built-in Rust testing)

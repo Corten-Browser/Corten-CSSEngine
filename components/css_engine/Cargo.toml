@@ -31,4 +31,20 @@ thiserror = "1.0"
 # Data structures
 fxhash = "0.2"
 
+# Logging and tracing
+tracing = "0.1"
+
+# Parallelism
+rayon = "1.10"
+crossbeam-channel = "0.5"
+
+# Synchronization
+parking_lot = "0.12"
+
 [dev-dependencies]
+tracing-subscriber = "0.3"
+criterion = { version = "0.5", features = ["html_reports"] }
+
+[[bench]]
+name = "benchmarks"
+harness = false

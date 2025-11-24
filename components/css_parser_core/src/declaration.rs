@@ -4,6 +4,23 @@ use crate::{ParseError, PropertyDeclaration, PropertyValue};
 use css_types::{Color, Length, LengthUnit};
 
 /// Parse a block of declarations (inside braces)
+///
+/// # Arguments
+///
+/// * `input` - The CSS declarations string (content between braces)
+///
+/// # Returns
+///
+/// A vector of parsed `PropertyDeclaration` objects
+///
+/// # Example
+///
+/// ```
+/// use css_parser_core::declaration::parse_declarations;
+///
+/// let decls = parse_declarations("color: red; margin: 10px").unwrap();
+/// assert_eq!(decls.len(), 2);
+/// ```
 pub fn parse_declarations(input: &str) -> Result<Vec<PropertyDeclaration>, ParseError> {
     let input = input.trim();
 
@@ -248,6 +265,13 @@ fn parse_length_value(value: &str) -> Result<PropertyValue, ParseError> {
         "%" => LengthUnit::Percent,
         "vw" => LengthUnit::Vw,
         "vh" => LengthUnit::Vh,
+        // Container-relative units (CSS Container Queries)
+        "cqw" => LengthUnit::Cqw,
+        "cqh" => LengthUnit::Cqh,
+        "cqi" => LengthUnit::Cqi,
+        "cqb" => LengthUnit::Cqb,
+        "cqmin" => LengthUnit::Cqmin,
+        "cqmax" => LengthUnit::Cqmax,
         _ => return Err(ParseError::new(1, 1, format!("Unknown unit: {}", unit_str))),
     };
 

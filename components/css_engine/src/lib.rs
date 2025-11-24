@@ -23,22 +23,60 @@
 //! ```
 
 // Public modules
+pub mod config;
 pub mod error;
+pub mod hot_reload;
+pub mod logging;
+pub mod message;
+pub mod metrics;
+pub mod parallel;
+pub mod state;
+pub mod style_thread;
 pub mod types;
+pub mod ua_stylesheet;
 
 // Internal modules
 mod engine;
-mod state;
 
 // Re-export main types
+pub use config::{LimitViolation, ResourceLimits};
 pub use engine::CssEngine;
 pub use error::{CssError, ElementId, StyleSheetId};
 pub use types::{
     Color, ComputedStyle, Display, DomNode, Length, StyleInvalidation, StyleNode, StyleTree,
 };
+pub use ua_stylesheet::{MinimalUserAgentStylesheet, UserAgentStylesheet};
 
 // Re-export state types for advanced usage
-pub use state::EngineConfig;
+pub use state::{
+    Animation, AnimationDirection, AnimationFillMode, CssEngineMetrics as StateMetrics,
+    CssEngineState, EngineConfig, MediaQueryEvaluator, ParsedRule, ParsedStylesheet,
+    PropertyDeclaration,
+};
+
+// Re-export message types
+pub use message::{
+    BasicCssEngine, CssMessage, CssResponse, InvalidationScope, MessageHandler, StylesheetId,
+    ViewportInfo,
+};
+
+// Re-export metrics types
+pub use metrics::{AggregateMetrics, CssEngineMetrics, MetricsCollector, ScopedMetrics};
+
+// Re-export parallel computation types
+pub use parallel::{
+    Declaration, DomSubtree, ElementRef, ParallelStyleComputer,
+    ParsedStylesheet as ParallelParsedStylesheet, Specificity, StyleRule,
+};
+
+// Re-export style thread types
+pub use style_thread::{StyleFuture, StyleTask, StyleThread, StyleThreadPool};
+
+// Re-export hot reload types
+pub use hot_reload::{
+    DeclarationModification, HotReloadConfig, HotReloadManager, ParsedRuleSnapshot,
+    RuleModification, StylesheetDiff, StylesheetVersion,
+};
 
 #[cfg(test)]
 mod tests {

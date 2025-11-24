@@ -2,15 +2,58 @@
 //!
 //! This module provides a basic CSS parser for CSS2.1 stylesheets,
 //! supporting simple selectors (element, class, id) and basic properties.
+//!
+//! ## At-Rules Support
+//!
+//! This parser supports the following CSS at-rules:
+//! - `@font-face` - Custom font declarations
+//! - `@supports` - Feature query parsing and evaluation
+//! - `@page` - Print styles
+//! - `@namespace` - XML namespace declarations
+//! - `@container` - Container queries for responsive container-based layouts
+//!
+//! ## Security
+//!
+//! This module includes input validation to prevent denial-of-service attacks.
+//! Use `InputValidator` to validate untrusted CSS input before parsing.
+//!
+//! ```
+//! use css_parser_core::{InputValidator, ValidationConfig};
+//!
+//! let validator = InputValidator::default();
+//! let css = "body { color: red; }";
+//!
+//! // Validate before parsing
+//! validator.validate(css).expect("CSS validation failed");
+//! ```
 
 pub use css_types::{Color, Length, Specificity};
 use std::fmt;
 
-mod declaration;
+mod at_rules;
+pub mod container;
+pub mod declaration;
+pub mod nesting;
 mod parser;
 mod selector;
+pub mod source_map;
+pub mod validation;
 
+pub use at_rules::{
+    FontDisplay, FontFaceRule, FontSource, FontStyle, FontWeight, NamespaceRule, PageRule,
+    PageSelector, SupportsCondition, SupportsRule, UnicodeRange,
+};
+pub use container::{ContainerQueryParser, ContainerRule};
+pub use nesting::{
+    flatten_nested_rules, resolve_selector, to_style_rules, ComplexNestedSelector, FlattenedRule,
+    NestedAtRule, NestedRule, NestedSelector, NestingParser,
+};
 pub use parser::CssParser;
+pub use source_map::{
+    extract_source_map_url, generate_source_map, parse_inline_source_map, parse_source_map,
+    Mapping, SourceLocation, SourceMap, SourceMapError,
+};
+pub use validation::{InputValidator, ValidationConfig, ValidationError};
 
 /// Stylesheet origin (author, user, user-agent)
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -87,6 +130,16 @@ pub enum CssRule {
     Media(MediaRule),
     /// Import rule
     Import(ImportRule),
+    /// @font-face rule for custom font declarations
+    FontFace(FontFaceRule),
+    /// @supports rule for feature queries
+    Supports(SupportsRule),
+    /// @page rule for print styles
+    Page(PageRule),
+    /// @namespace rule for XML namespace declarations
+    Namespace(NamespaceRule),
+    /// @container rule for container queries
+    Container(ContainerRule),
 }
 
 /// Style rule with selectors and declarations

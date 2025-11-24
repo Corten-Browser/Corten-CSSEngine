@@ -5,10 +5,20 @@
 //! - Property inheritance
 //! - Unit resolution
 //! - Rule tree for style sharing
+//! - Bloom filter for fast selector rejection
+//! - String interning for memory optimization
+//! - Arena allocation for efficient memory management
 
+pub mod arena;
+pub mod bloom_filter;
 pub mod compute;
+pub mod interning;
+pub mod rule_tree;
 pub mod types;
 
+pub use arena::{
+    ArenaIndex, RuleNodeArena, SelectorArena, SelectorData, StyleArena, StyleDataArena,
+};
 pub use types::{ComputedValues, Display, Position, RuleNode, StyleContext};
 
 use css_cascade::ApplicableRule;

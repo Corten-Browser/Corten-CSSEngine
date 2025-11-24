@@ -1,0 +1,17 @@
+[package]
+name = "css-fonts"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+description = "Platform font discovery for Corten CSS Engine"
+
+[features]
+default = []
+fontconfig = []
+directwrite = []
+coretext = []
+
+[dependencies]
+# Component dependencies will be added as needed
+
+[dev-dependencies]

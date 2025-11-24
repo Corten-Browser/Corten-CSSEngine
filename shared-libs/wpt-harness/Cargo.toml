@@ -1,0 +1,11 @@
+[package]
+name = "wpt-harness"
+version = "0.1.0"
+edition = "2021"
+description = "WPT (Web Platform Tests) test harness for CSS engine conformance testing"
+
+[dependencies]
+# No runtime dependencies - standalone test harness
+
+[dev-dependencies]
+# Testing framework (uses built-in Rust testing)

@@ -2,10 +2,11 @@
 //!
 //! This module provides core CSS types including:
 //! - Color (RGB/RGBA)
-//! - Length (with units: px, em, rem, %, vw, vh)
+//! - Length (with units: px, em, rem, %, vw, vh, cqw, cqh, cqi, cqb, cqmin, cqmax)
 //! - Specificity (selector specificity calculation)
 //! - CssError (error handling)
 //! - CssValue trait (parsing and serialization)
+//! - Container Query types (ContainerType, ContainerCondition, SizeCondition)
 
 use std::cmp::Ordering;
 use std::fmt;
@@ -246,6 +247,19 @@ pub enum LengthUnit {
     Vw,
     /// Viewport height
     Vh,
+    // Container-relative units (CSS Container Queries)
+    /// Container query width (1% of query container's width)
+    Cqw,
+    /// Container query height (1% of query container's height)
+    Cqh,
+    /// Container query inline size (1% of query container's inline size)
+    Cqi,
+    /// Container query block size (1% of query container's block size)
+    Cqb,
+    /// Container query minimum (smaller of cqi or cqb)
+    Cqmin,
+    /// Container query maximum (larger of cqi or cqb)
+    Cqmax,
 }
 
 impl LengthUnit {
@@ -258,6 +272,13 @@ impl LengthUnit {
             "%" => Ok(LengthUnit::Percent),
             "vw" => Ok(LengthUnit::Vw),
             "vh" => Ok(LengthUnit::Vh),
+            // Container-relative units
+            "cqw" => Ok(LengthUnit::Cqw),
+            "cqh" => Ok(LengthUnit::Cqh),
+            "cqi" => Ok(LengthUnit::Cqi),
+            "cqb" => Ok(LengthUnit::Cqb),
+            "cqmin" => Ok(LengthUnit::Cqmin),
+            "cqmax" => Ok(LengthUnit::Cqmax),
             _ => Err(CssError::ParseError(format!("Unknown unit: {}", s))),
         }
     }
@@ -271,6 +292,13 @@ impl LengthUnit {
             LengthUnit::Percent => "%",
             LengthUnit::Vw => "vw",
             LengthUnit::Vh => "vh",
+            // Container-relative units
+            LengthUnit::Cqw => "cqw",
+            LengthUnit::Cqh => "cqh",
+            LengthUnit::Cqi => "cqi",
+            LengthUnit::Cqb => "cqb",
+            LengthUnit::Cqmin => "cqmin",
+            LengthUnit::Cqmax => "cqmax",
         }
     }
 }
@@ -433,6 +461,253 @@ impl Ord for Specificity {
     }
 }
 
+// ============================================================================
+// Container Query Types (CSS Container Queries Level 3)
+// ============================================================================
+
+/// Container type for the container-type property
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum ContainerType {
+    /// No containment (default)
+    #[default]
+    Normal,
+    /// Size containment on both axes
+    Size,
+    /// Size containment on inline axis only
+    InlineSize,
+}
+
+impl ContainerType {
+    /// Parse a container-type value
+    pub fn parse(s: &str) -> Result<Self, CssError> {
+        match s.trim().to_lowercase().as_str() {
+            "normal" => Ok(ContainerType::Normal),
+            "size" => Ok(ContainerType::Size),
+            "inline-size" => Ok(ContainerType::InlineSize),
+            _ => Err(CssError::ParseError(format!(
+                "Invalid container-type: {}",
+                s
+            ))),
+        }
+    }
+
+    /// Serialize to CSS string
+    pub fn to_css(&self) -> &'static str {
+        match self {
+            ContainerType::Normal => "normal",
+            ContainerType::Size => "size",
+            ContainerType::InlineSize => "inline-size",
+        }
+    }
+}
+
+/// Comparison operator for container queries
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Comparison {
+    /// Equal to (=)
+    Equal,
+    /// Less than (<)
+    LessThan,
+    /// Less than or equal (<=)
+    LessThanOrEqual,
+    /// Greater than (>)
+    GreaterThan,
+    /// Greater than or equal (>=)
+    GreaterThanOrEqual,
+}
+
+impl Comparison {
+    /// Parse a comparison operator
+    pub fn parse(s: &str) -> Result<Self, CssError> {
+        match s.trim() {
+            "=" => Ok(Comparison::Equal),
+            "<" => Ok(Comparison::LessThan),
+            "<=" => Ok(Comparison::LessThanOrEqual),
+            ">" => Ok(Comparison::GreaterThan),
+            ">=" => Ok(Comparison::GreaterThanOrEqual),
+            _ => Err(CssError::ParseError(format!(
+                "Invalid comparison operator: {}",
+                s
+            ))),
+        }
+    }
+
+    /// Serialize to CSS string
+    pub fn to_css(&self) -> &'static str {
+        match self {
+            Comparison::Equal => "=",
+            Comparison::LessThan => "<",
+            Comparison::LessThanOrEqual => "<=",
+            Comparison::GreaterThan => ">",
+            Comparison::GreaterThanOrEqual => ">=",
+        }
+    }
+}
+
+/// Size feature for container size queries
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SizeFeature {
+    /// Width of the container
+    Width,
+    /// Height of the container
+    Height,
+    /// Inline size (width in horizontal writing modes)
+    InlineSize,
+    /// Block size (height in horizontal writing modes)
+    BlockSize,
+    /// Aspect ratio
+    AspectRatio,
+    /// Orientation (portrait/landscape)
+    Orientation,
+}
+
+impl SizeFeature {
+    /// Parse a size feature name
+    pub fn parse(s: &str) -> Result<Self, CssError> {
+        match s.trim().to_lowercase().as_str() {
+            "width" => Ok(SizeFeature::Width),
+            "height" => Ok(SizeFeature::Height),
+            "inline-size" => Ok(SizeFeature::InlineSize),
+            "block-size" => Ok(SizeFeature::BlockSize),
+            "aspect-ratio" => Ok(SizeFeature::AspectRatio),
+            "orientation" => Ok(SizeFeature::Orientation),
+            _ => Err(CssError::ParseError(format!(
+                "Invalid size feature: {}",
+                s
+            ))),
+        }
+    }
+
+    /// Serialize to CSS string
+    pub fn to_css(&self) -> &'static str {
+        match self {
+            SizeFeature::Width => "width",
+            SizeFeature::Height => "height",
+            SizeFeature::InlineSize => "inline-size",
+            SizeFeature::BlockSize => "block-size",
+            SizeFeature::AspectRatio => "aspect-ratio",
+            SizeFeature::Orientation => "orientation",
+        }
+    }
+}
+
+/// Size condition for container queries
+#[derive(Debug, Clone, PartialEq)]
+pub enum SizeCondition {
+    /// Minimum width: (min-width: value)
+    MinWidth(Length),
+    /// Maximum width: (max-width: value)
+    MaxWidth(Length),
+    /// Minimum height: (min-height: value)
+    MinHeight(Length),
+    /// Maximum height: (max-height: value)
+    MaxHeight(Length),
+    /// Width comparison: (width > value), (width = value), etc.
+    Width(Comparison, Length),
+    /// Height comparison: (height > value), etc.
+    Height(Comparison, Length),
+    /// Inline size comparison
+    InlineSize(Comparison, Length),
+    /// Block size comparison
+    BlockSize(Comparison, Length),
+    /// Aspect ratio: (aspect-ratio: value)
+    AspectRatio(f32),
+    /// Orientation: (orientation: portrait) or (orientation: landscape)
+    Orientation(Orientation),
+}
+
+/// Orientation values for container queries
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Orientation {
+    /// Portrait orientation (height > width)
+    Portrait,
+    /// Landscape orientation (width > height)
+    Landscape,
+}
+
+impl Orientation {
+    /// Parse orientation value
+    pub fn parse(s: &str) -> Result<Self, CssError> {
+        match s.trim().to_lowercase().as_str() {
+            "portrait" => Ok(Orientation::Portrait),
+            "landscape" => Ok(Orientation::Landscape),
+            _ => Err(CssError::ParseError(format!(
+                "Invalid orientation: {}",
+                s
+            ))),
+        }
+    }
+
+    /// Serialize to CSS string
+    pub fn to_css(&self) -> &'static str {
+        match self {
+            Orientation::Portrait => "portrait",
+            Orientation::Landscape => "landscape",
+        }
+    }
+}
+
+/// Style condition for container style queries
+#[derive(Debug, Clone, PartialEq)]
+pub struct StyleCondition {
+    /// Custom property name (e.g., "--theme")
+    pub property: String,
+    /// Value to check for
+    pub value: String,
+}
+
+impl StyleCondition {
+    /// Create a new style condition
+    pub fn new(property: impl Into<String>, value: impl Into<String>) -> Self {
+        StyleCondition {
+            property: property.into(),
+            value: value.into(),
+        }
+    }
+}
+
+/// Container query condition
+#[derive(Debug, Clone, PartialEq)]
+pub enum ContainerCondition {
+    /// Size query condition
+    Size(SizeCondition),
+    /// Style query condition: style(property: value)
+    Style(StyleCondition),
+    /// Negation: not (condition)
+    Not(Box<ContainerCondition>),
+    /// Conjunction: (condition) and (condition)
+    And(Vec<ContainerCondition>),
+    /// Disjunction: (condition) or (condition)
+    Or(Vec<ContainerCondition>),
+}
+
+impl ContainerCondition {
+    /// Create a size condition
+    pub fn size(condition: SizeCondition) -> Self {
+        ContainerCondition::Size(condition)
+    }
+
+    /// Create a style condition
+    pub fn style(property: impl Into<String>, value: impl Into<String>) -> Self {
+        ContainerCondition::Style(StyleCondition::new(property, value))
+    }
+
+    /// Create a negated condition
+    pub fn not(condition: ContainerCondition) -> Self {
+        ContainerCondition::Not(Box::new(condition))
+    }
+
+    /// Create an AND condition
+    pub fn and(conditions: Vec<ContainerCondition>) -> Self {
+        ContainerCondition::And(conditions)
+    }
+
+    /// Create an OR condition
+    pub fn or(conditions: Vec<ContainerCondition>) -> Self {
+        ContainerCondition::Or(conditions)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -458,5 +733,169 @@ mod tests {
         assert_eq!(spec.id_selectors(), 1);
         assert_eq!(spec.class_selectors(), 2);
         assert_eq!(spec.type_selectors(), 3);
+    }
+
+    // Container Query Unit Tests
+
+    #[test]
+    fn test_container_relative_units_parse() {
+        assert_eq!(LengthUnit::parse("cqw").unwrap(), LengthUnit::Cqw);
+        assert_eq!(LengthUnit::parse("cqh").unwrap(), LengthUnit::Cqh);
+        assert_eq!(LengthUnit::parse("cqi").unwrap(), LengthUnit::Cqi);
+        assert_eq!(LengthUnit::parse("cqb").unwrap(), LengthUnit::Cqb);
+        assert_eq!(LengthUnit::parse("cqmin").unwrap(), LengthUnit::Cqmin);
+        assert_eq!(LengthUnit::parse("cqmax").unwrap(), LengthUnit::Cqmax);
+    }
+
+    #[test]
+    fn test_container_relative_units_to_str() {
+        assert_eq!(LengthUnit::Cqw.to_str(), "cqw");
+        assert_eq!(LengthUnit::Cqh.to_str(), "cqh");
+        assert_eq!(LengthUnit::Cqi.to_str(), "cqi");
+        assert_eq!(LengthUnit::Cqb.to_str(), "cqb");
+        assert_eq!(LengthUnit::Cqmin.to_str(), "cqmin");
+        assert_eq!(LengthUnit::Cqmax.to_str(), "cqmax");
+    }
+
+    #[test]
+    fn test_length_with_container_units() {
+        let length = Length::new(50.0, LengthUnit::Cqw);
+        assert_eq!(length.value(), 50.0);
+        assert_eq!(length.unit(), LengthUnit::Cqw);
+        assert_eq!(length.serialize(), "50cqw");
+    }
+
+    // Container Type Tests
+
+    #[test]
+    fn test_container_type_parse() {
+        assert_eq!(ContainerType::parse("normal").unwrap(), ContainerType::Normal);
+        assert_eq!(ContainerType::parse("size").unwrap(), ContainerType::Size);
+        assert_eq!(ContainerType::parse("inline-size").unwrap(), ContainerType::InlineSize);
+        assert_eq!(ContainerType::parse("NORMAL").unwrap(), ContainerType::Normal);
+        assert!(ContainerType::parse("invalid").is_err());
+    }
+
+    #[test]
+    fn test_container_type_to_css() {
+        assert_eq!(ContainerType::Normal.to_css(), "normal");
+        assert_eq!(ContainerType::Size.to_css(), "size");
+        assert_eq!(ContainerType::InlineSize.to_css(), "inline-size");
+    }
+
+    #[test]
+    fn test_container_type_default() {
+        assert_eq!(ContainerType::default(), ContainerType::Normal);
+    }
+
+    // Comparison Tests
+
+    #[test]
+    fn test_comparison_parse() {
+        assert_eq!(Comparison::parse("=").unwrap(), Comparison::Equal);
+        assert_eq!(Comparison::parse("<").unwrap(), Comparison::LessThan);
+        assert_eq!(Comparison::parse("<=").unwrap(), Comparison::LessThanOrEqual);
+        assert_eq!(Comparison::parse(">").unwrap(), Comparison::GreaterThan);
+        assert_eq!(Comparison::parse(">=").unwrap(), Comparison::GreaterThanOrEqual);
+        assert!(Comparison::parse("!=").is_err());
+    }
+
+    #[test]
+    fn test_comparison_to_css() {
+        assert_eq!(Comparison::Equal.to_css(), "=");
+        assert_eq!(Comparison::LessThan.to_css(), "<");
+        assert_eq!(Comparison::LessThanOrEqual.to_css(), "<=");
+        assert_eq!(Comparison::GreaterThan.to_css(), ">");
+        assert_eq!(Comparison::GreaterThanOrEqual.to_css(), ">=");
+    }
+
+    // Size Feature Tests
+
+    #[test]
+    fn test_size_feature_parse() {
+        assert_eq!(SizeFeature::parse("width").unwrap(), SizeFeature::Width);
+        assert_eq!(SizeFeature::parse("height").unwrap(), SizeFeature::Height);
+        assert_eq!(SizeFeature::parse("inline-size").unwrap(), SizeFeature::InlineSize);
+        assert_eq!(SizeFeature::parse("block-size").unwrap(), SizeFeature::BlockSize);
+        assert_eq!(SizeFeature::parse("aspect-ratio").unwrap(), SizeFeature::AspectRatio);
+        assert_eq!(SizeFeature::parse("orientation").unwrap(), SizeFeature::Orientation);
+        assert!(SizeFeature::parse("invalid").is_err());
+    }
+
+    // Orientation Tests
+
+    #[test]
+    fn test_orientation_parse() {
+        assert_eq!(Orientation::parse("portrait").unwrap(), Orientation::Portrait);
+        assert_eq!(Orientation::parse("landscape").unwrap(), Orientation::Landscape);
+        assert_eq!(Orientation::parse("PORTRAIT").unwrap(), Orientation::Portrait);
+        assert!(Orientation::parse("invalid").is_err());
+    }
+
+    #[test]
+    fn test_orientation_to_css() {
+        assert_eq!(Orientation::Portrait.to_css(), "portrait");
+        assert_eq!(Orientation::Landscape.to_css(), "landscape");
+    }
+
+    // Container Condition Tests
+
+    #[test]
+    fn test_container_condition_size() {
+        let condition = ContainerCondition::size(SizeCondition::MinWidth(Length::new(400.0, LengthUnit::Px)));
+        assert!(matches!(condition, ContainerCondition::Size(SizeCondition::MinWidth(_))));
+    }
+
+    #[test]
+    fn test_container_condition_style() {
+        let condition = ContainerCondition::style("--theme", "dark");
+        if let ContainerCondition::Style(style) = condition {
+            assert_eq!(style.property, "--theme");
+            assert_eq!(style.value, "dark");
+        } else {
+            panic!("Expected Style condition");
+        }
+    }
+
+    #[test]
+    fn test_container_condition_not() {
+        let inner = ContainerCondition::size(SizeCondition::MinWidth(Length::new(400.0, LengthUnit::Px)));
+        let condition = ContainerCondition::not(inner);
+        assert!(matches!(condition, ContainerCondition::Not(_)));
+    }
+
+    #[test]
+    fn test_container_condition_and() {
+        let conditions = vec![
+            ContainerCondition::size(SizeCondition::MinWidth(Length::new(400.0, LengthUnit::Px))),
+            ContainerCondition::size(SizeCondition::MaxWidth(Length::new(800.0, LengthUnit::Px))),
+        ];
+        let condition = ContainerCondition::and(conditions);
+        if let ContainerCondition::And(conds) = condition {
+            assert_eq!(conds.len(), 2);
+        } else {
+            panic!("Expected And condition");
+        }
+    }
+
+    #[test]
+    fn test_container_condition_or() {
+        let conditions = vec![
+            ContainerCondition::size(SizeCondition::MinWidth(Length::new(400.0, LengthUnit::Px))),
+            ContainerCondition::style("--theme", "dark"),
+        ];
+        let condition = ContainerCondition::or(conditions);
+        if let ContainerCondition::Or(conds) = condition {
+            assert_eq!(conds.len(), 2);
+        } else {
+            panic!("Expected Or condition");
+        }
+    }
+
+    #[test]
+    fn test_style_condition_new() {
+        let style = StyleCondition::new("--color", "blue");
+        assert_eq!(style.property, "--color");
+        assert_eq!(style.value, "blue");
     }
 }

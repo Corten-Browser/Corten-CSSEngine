@@ -15,3 +15,7 @@ css-matcher-core = { path = "../css_matcher_core" }
 
 [dev-dependencies]
 criterion = "0.5"
+
+[[bench]]
+name = "optimization_benchmarks"
+harness = false
