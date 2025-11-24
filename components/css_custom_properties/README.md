@@ -59,14 +59,14 @@ use css_types::{Length, LengthUnit};
 let expr = parse_calc_expression("calc(100% - 20px)").unwrap();
 
 // Evaluate with context
-let context = CalcContext::new(200.0, 16.0); // viewport_width, font_size
+let context = CalcContext::new(200.0, 200.0, 16.0); // viewport_width, viewport_height, font_size
 let result = expr.evaluate(&context);
 // 100% of 200px - 20px = 180px
 assert!((result - 180.0).abs() < 0.01);
 
 // Complex expressions
 let expr = parse_calc_expression("calc((100% - 40px) / 2)").unwrap();
-let context = CalcContext::new(200.0, 16.0);
+let context = CalcContext::new(200.0, 200.0, 16.0);
 let result = expr.evaluate(&context);
 // (200px - 40px) / 2 = 80px
 assert!((result - 80.0).abs() < 0.01);

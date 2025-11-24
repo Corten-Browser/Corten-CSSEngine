@@ -57,6 +57,35 @@ pub fn resolve_length(length: &Length, context: &StyleContext) -> f32 {
             // Viewport height percentage
             context.viewport_height * length.value() / 100.0
         }
+        // Container query units (CSS Container Queries Level 3)
+        LengthUnit::Cqw => {
+            // Container query width percentage
+            context.container_width * length.value() / 100.0
+        }
+        LengthUnit::Cqh => {
+            // Container query height percentage
+            context.container_height * length.value() / 100.0
+        }
+        LengthUnit::Cqi => {
+            // Container query inline size (horizontal for LTR/RTL)
+            // For simplicity, assuming horizontal writing mode
+            context.container_width * length.value() / 100.0
+        }
+        LengthUnit::Cqb => {
+            // Container query block size (vertical for LTR/RTL)
+            // For simplicity, assuming horizontal writing mode
+            context.container_height * length.value() / 100.0
+        }
+        LengthUnit::Cqmin => {
+            // Smaller of cqi or cqb
+            let min_size = context.container_width.min(context.container_height);
+            min_size * length.value() / 100.0
+        }
+        LengthUnit::Cqmax => {
+            // Larger of cqi or cqb
+            let max_size = context.container_width.max(context.container_height);
+            max_size * length.value() / 100.0
+        }
     }
 }
 

@@ -198,6 +198,17 @@ fn length_to_px(length: &Length, viewport: &ViewportInfo) -> f32 {
         }
         LengthUnit::Vw => (length.value() / 100.0) * viewport.width as f32,
         LengthUnit::Vh => (length.value() / 100.0) * viewport.height as f32,
+        // Container query units - use viewport as fallback for media queries
+        LengthUnit::Cqw | LengthUnit::Cqi => (length.value() / 100.0) * viewport.width as f32,
+        LengthUnit::Cqh | LengthUnit::Cqb => (length.value() / 100.0) * viewport.height as f32,
+        LengthUnit::Cqmin => {
+            let min_size = (viewport.width as f32).min(viewport.height as f32);
+            (length.value() / 100.0) * min_size
+        }
+        LengthUnit::Cqmax => {
+            let max_size = (viewport.width as f32).max(viewport.height as f32);
+            (length.value() / 100.0) * max_size
+        }
     }
 }
 

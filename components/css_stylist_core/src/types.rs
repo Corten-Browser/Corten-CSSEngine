@@ -236,6 +236,10 @@ pub struct StyleContext {
     pub viewport_height: f32,
     /// Root font size for rem units
     pub root_font_size: f32,
+    /// Container query width in pixels (for cqw, cqi units)
+    pub container_width: f32,
+    /// Container query height in pixels (for cqh, cqb units)
+    pub container_height: f32,
 }
 
 impl StyleContext {
@@ -266,6 +270,28 @@ impl StyleContext {
             viewport_width,
             viewport_height,
             root_font_size,
+            // Default container size to viewport size when not in a container
+            container_width: viewport_width,
+            container_height: viewport_height,
+        }
+    }
+
+    /// Create a style context with explicit container size
+    pub fn with_container(
+        parent_values: Option<Arc<ComputedValues>>,
+        viewport_width: f32,
+        viewport_height: f32,
+        root_font_size: f32,
+        container_width: f32,
+        container_height: f32,
+    ) -> Self {
+        Self {
+            parent_values,
+            viewport_width,
+            viewport_height,
+            root_font_size,
+            container_width,
+            container_height,
         }
     }
 }

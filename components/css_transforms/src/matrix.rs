@@ -116,6 +116,11 @@ fn resolve_length(length: &css_types::Length, reference: f32) -> f32 {
         LengthUnit::Percent => length.value() * reference / 100.0,
         LengthUnit::Em | LengthUnit::Rem => length.value() * 16.0, // Assume 16px base
         LengthUnit::Vw | LengthUnit::Vh => length.value() * 10.0,  // Simplified
+        // Container query units - use reference value as fallback container size
+        LengthUnit::Cqw | LengthUnit::Cqh | LengthUnit::Cqi | LengthUnit::Cqb => {
+            length.value() * reference / 100.0
+        }
+        LengthUnit::Cqmin | LengthUnit::Cqmax => length.value() * reference / 100.0,
     }
 }
 

@@ -106,7 +106,7 @@ fn test_evaluate_calc_simple() {
     ))));
     let expr = CalcExpression::Add(left, right);
 
-    let context = CalcContext::new(100.0, 16.0); // viewport_width=100, font_size=16
+    let context = CalcContext::new(100.0, 100.0, 16.0); // viewport_width=100, font_size=16
     let result = expr.evaluate(&context);
     assert!((result - 30.0).abs() < 0.01);
 }
@@ -120,7 +120,7 @@ fn test_evaluate_calc_multiplication() {
     ))));
     let expr = CalcExpression::Multiply(value, 2.0);
 
-    let context = CalcContext::new(100.0, 16.0);
+    let context = CalcContext::new(100.0, 100.0, 16.0);
     let result = expr.evaluate(&context);
     assert!((result - 20.0).abs() < 0.01);
 }
@@ -134,7 +134,7 @@ fn test_evaluate_calc_division() {
     ))));
     let expr = CalcExpression::Divide(value, 4.0);
 
-    let context = CalcContext::new(100.0, 16.0);
+    let context = CalcContext::new(100.0, 100.0, 16.0);
     let result = expr.evaluate(&context);
     assert!((result - 25.0).abs() < 0.01);
 }
@@ -149,7 +149,7 @@ fn test_evaluate_calc_percentage() {
     ))));
     let expr = CalcExpression::Add(left, right);
 
-    let context = CalcContext::new(100.0, 16.0);
+    let context = CalcContext::new(100.0, 100.0, 16.0);
     let result = expr.evaluate(&context);
     assert!((result - 60.0).abs() < 0.01);
 }

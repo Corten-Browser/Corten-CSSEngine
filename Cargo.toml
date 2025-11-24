@@ -1,0 +1,41 @@
+[workspace]
+resolver = "2"
+members = [
+    "components/css_types",
+    "components/css_parser_core",
+    "components/css_parser_values",
+    "components/css_cascade",
+    "components/css_matcher_core",
+    "components/css_matcher_pseudo",
+    "components/css_custom_properties",
+    "components/css_stylist_core",
+    "components/css_stylist_cache",
+    "components/css_media_queries",
+    "components/css_layout_box_model",
+    "components/css_layout_flexbox",
+    "components/css_layout_grid",
+    "components/css_layout_multicolumn",
+    "components/css_fonts",
+    "components/css_paint",
+    "components/css_transforms",
+    "components/css_transitions",
+    "components/css_animations",
+    "components/css_invalidation",
+    "components/css_engine",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["Corten Browser Team"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/Corten-Browser/Corten-CSSEngine"
+
+[workspace.dependencies]
+# Core dependencies used across components
+servo_arc = "0.3"
+smallvec = "1.11"
+fnv = "1.0"
+parking_lot = "0.12"
+log = "0.4"
+thiserror = "1.0"
